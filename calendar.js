@@ -69,6 +69,9 @@ function createTable(calendarBox) {
     const tbody = document.createElement('tbody');
 
     const headerRow = document.createElement('tr');
+    const emptyTh = document.createElement('th');
+    headerRow.append(emptyTh);
+
     ['P','A','T','K','Pn','Š','S'].forEach(d => {
         const th = document.createElement('th');
         th.textContent = d;
@@ -183,8 +186,8 @@ function highlightSelected(tbody, date) {
 function highlightWeekends(tbody) {
     const rows = tbody.querySelectorAll('tr');
     rows.forEach(row => {
-        row.children[5].classList.add('weekend');
         row.children[6].classList.add('weekend');
+        row.children[7].classList.add('weekend');
     });
 }
 
@@ -217,10 +220,21 @@ function fillDay(tbody, firstDayIndex, dayNumber)  {
     const row = calendarWeek[rowIndex];
     const cells = row.querySelectorAll('td');
     
+
     if (cells[0].textContent === '') {
-        const firstDayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
-        cells[0].textContent = getISOWeekNumber(firstDayOfWeek);
+        const weekdayIndex = (firstDayIndex + dayNumber - 1) % 7;
+
+        const mondayDayNumber = dayNumber - weekdayIndex;
+
+        const mondayDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            mondayDayNumber
+        );
+
+        cells[0].textContent = getISOWeekNumber(mondayDate);
     }
+
 
     const cellIndex = (firstDayIndex + dayNumber - 1) % 7 + 1;
     cells[cellIndex].textContent = dayNumber;
@@ -245,7 +259,7 @@ function styleDay(tbody, dayNumber, firstDayOfMonthIndex, style) {
     const row = rows[rowIndex];
     const cells = row.querySelectorAll('td');
     const cellIndex = (firstDayOfMonthIndex + dayNumber - 1) % 7;
-    cells[cellIndex].classList.add(style);
+    cells[cellIndex+1].classList.add(style);
 }
 
 function getISOWeekNumber(date) {
