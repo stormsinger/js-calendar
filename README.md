@@ -13,3 +13,5 @@ Paprastas kalendoriaus komponentas, parašytas grynu JavaScript (be frameworkų)
 
 1. Atsisiųsk projektą arba nuklonuok repo.
 2. Atidaryk `index.html` naršyklėje.
+
+![alt text](image.png)
