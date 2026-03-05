@@ -144,6 +144,12 @@ function getWeeksInMonth(firstDayIndex, daysInMonth) {
 function createEmptyRows(tbody, rows) {
     for (let i = 0; i < rows; i++) {
         const tr = document.createElement('tr');
+
+        const weekNumberCell = document.createElement('td');
+        weekNumberCell.classList.add('week-number');
+        weekNumberCell.textContent = ''; 
+        tr.append(weekNumberCell);
+
         for (let j = 0; j < 7; j++) {
             const td = document.createElement('td');
             tr.append(td);
@@ -185,8 +191,10 @@ function highlightWeekends(tbody) {
 function sevenDays(rows, tableBody) {
     for (let i = 0; i < rows; i++) {
         const newLine = document.createElement('tr');
+
+
         tableBody.append(newLine);
-        
+      
         for (let i = 0; i <= 6; i++) {
             const emptyCell = document.createElement('td');
             emptyCell.textContent = '';
@@ -208,9 +216,20 @@ function fillDay(tbody, firstDayIndex, dayNumber)  {
     const rowIndex = weekOfMonth(firstDayIndex, dayNumber);
     const row = calendarWeek[rowIndex];
     const cells = row.querySelectorAll('td');
-    const cellIndex = (firstDayIndex + dayNumber - 1) % 7;
+    
+    if (cells[0].textContent === '') {
+        const firstDayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
+        cells[0].textContent = getISOWeekNumber(firstDayOfWeek);
+    }
+
+    const cellIndex = (firstDayIndex + dayNumber - 1) % 7 + 1;
     cells[cellIndex].textContent = dayNumber;
-    if (selectedDate && selectedDate.getDate() === dayNumber && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear()) {
+    if (
+        selectedDate && 
+        selectedDate.getDate() === dayNumber && 
+        selectedDate.getMonth() === currentDate.getMonth() && 
+        selectedDate.getFullYear() === currentDate.getFullYear()
+    ) {
         cells[cellIndex].classList.add('active-day');
     }
 }
@@ -219,15 +238,6 @@ function weekOfMonth(firstDayIndex, dayNumber) {
     return Math.floor((firstDayIndex + dayNumber - 1) / 7);
 }
 
-// function styleDay(dayNumber, firstDayOfMonthIndex, style) {
-//     const calendarWeek = document.querySelectorAll('tr');
-//     const rowIndex = weekOfMonth(firstDayOfMonthIndex, dayNumber);
-//     const row = calendarWeek[rowIndex];
-//     const cells = row.querySelectorAll('td');
-//     const cellIndex = (firstDayOfMonthIndex + dayNumber - 1) % 7;
-//     const todayCell = cells[cellIndex];
-//     todayCell.classList.add(style);
-// }
 
 function styleDay(tbody, dayNumber, firstDayOfMonthIndex, style) {
     const rows = tbody.querySelectorAll('tr');
@@ -236,4 +246,17 @@ function styleDay(tbody, dayNumber, firstDayOfMonthIndex, style) {
     const cells = row.querySelectorAll('td');
     const cellIndex = (firstDayOfMonthIndex + dayNumber - 1) % 7;
     cells[cellIndex].classList.add(style);
+}
+
+function getISOWeekNumber(date) {
+    const temp = new Date(date.getTime());
+    temp.setHours(0, 0, 0, 0);
+
+    // Thursday in current week decides the year.
+    temp.setDate(temp.getDate() + 3 - ((temp.getDay() + 6) % 7));
+
+    const week1 = new Date(temp.getFullYear(), 0, 4);
+
+    return 1 + Math.round(((temp.getTime() - week1.getTime()) / 86400000
+        - 3 + ((week1.getDay() + 6) % 7)) / 7);
 }
