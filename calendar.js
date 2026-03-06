@@ -65,14 +65,16 @@ function createNavigation(calendarBox, date) {
 
 function createTable(calendarBox) {
     const table = document.createElement('table');
+    table.classList.add('month-slide-in');
+
     const thead = document.createElement('thead');
     const tbody = document.createElement('tbody');
 
     const headerRow = document.createElement('tr');
     const emptyTh = document.createElement('th');
-    headerRow.append(emptyTh);
+    //headerRow.append(emptyTh);
 
-    ['P','A','T','K','Pn','Š','S'].forEach(d => {
+    ['Week','P','A','T','K','Pn','Š','S'].forEach(d => {
         const th = document.createElement('th');
         th.textContent = d;
         headerRow.append(th);
@@ -124,11 +126,16 @@ function attachNavigationEvents(prevY, nextY, prevM, nextM) {
 
 function fillDays(tbody, date) {
     const firstDayIndex = getFirstDayIndex(date);
-    const daysInMonth = getDaysInMonth(date);
-    const weeks = getWeeksInMonth(firstDayIndex, daysInMonth);
+    const prevMonth = new Date();
+    prevMonth.setMonth(currentDate.getMonth() - 1);
+    const previousMonthDays = getDaysInMonth(prevMonth);
+    const currentDaysInMonth = getDaysInMonth(date);
+    const weeks = getWeeksInMonth(firstDayIndex, currentDaysInMonth);
 
     createEmptyRows(tbody, weeks);
-    populateDays(tbody, firstDayIndex, daysInMonth);
+    pupulatePrevMonthDays(tbody, firstDayIndex, previousMonthDays);
+    populateCurrentMonthDays(tbody, firstDayIndex, currentDaysInMonth, previousMonthDays);
+    pupulateNextMonthDays(tbody, firstDayIndex, currentDaysInMonth);
 }
 
 function getFirstDayIndex(date) {
@@ -145,9 +152,9 @@ function getWeeksInMonth(firstDayIndex, daysInMonth) {
 }
 
 function createEmptyRows(tbody, rows) {
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < 6; i++) {
         const tr = document.createElement('tr');
-
+        tr.classList.add('calendar-row');
         const weekNumberCell = document.createElement('td');
         weekNumberCell.classList.add('week-number');
         weekNumberCell.textContent = ''; 
@@ -161,9 +168,21 @@ function createEmptyRows(tbody, rows) {
     }
 }
 
-function populateDays(tbody,firstDayIndex, daysInMonth) {
+function pupulatePrevMonthDays(tbody, firstDayIndex, previousMonthDays) {
+    for (let i = 1 - firstDayIndex; i <= 0; i++) {
+        fillDay(tbody, firstDayIndex, i, previousMonthDays + i);
+    }
+}
+
+function populateCurrentMonthDays(tbody, firstDayIndex, daysInMonth, previousMonthDays) {
     for (let i = 1; i <= daysInMonth; i++) {
-        fillDay(tbody, firstDayIndex, i);
+        fillDay(tbody, firstDayIndex, i, i);
+    }
+}
+
+function pupulateNextMonthDays(tbody, firstDayIndex, daysInMonth) {
+    for (let i = daysInMonth + 1; i <= 42-firstDayIndex; i++) {
+        fillDay(tbody, firstDayIndex, i, i - daysInMonth);
     }
 }
 
@@ -191,32 +210,32 @@ function highlightWeekends(tbody) {
     });
 }
 
-function sevenDays(rows, tableBody) {
-    for (let i = 0; i < rows; i++) {
-        const newLine = document.createElement('tr');
+// function sevenDays(rows, tableBody) {
+//     for (let i = 0; i < rows; i++) {
+//         const newLine = document.createElement('tr');
 
 
-        tableBody.append(newLine);
+//         tableBody.append(newLine);
       
-        for (let i = 0; i <= 6; i++) {
-            const emptyCell = document.createElement('td');
-            emptyCell.textContent = '';
-            emptyCell.style.width = "20px";
-            emptyCell.style.height = "20px";
-            newLine.append(emptyCell);
-        }
-    }
-}
+//         for (let i = 0; i <= 6; i++) {
+//             const emptyCell = document.createElement('td');
+//             emptyCell.textContent = '';
+//             emptyCell.style.width = "20px";
+//             emptyCell.style.height = "20px";
+//             newLine.append(emptyCell);
+//         }
+//     }
+// }
 
-function fillCalendar(firstDayIndex, daysOfMonthCount) {
-    for (let i = firstDayIndex; i < firstDayIndex + daysOfMonthCount; i++) {
-        fillDay(firstDayIndex, i - firstDayIndex + 1);
-    }
-}
+// function fillCalendar(firstDayIndex, daysOfMonthCount) {
+//     for (let i = firstDayIndex; i < firstDayIndex + daysOfMonthCount; i++) {
+//         fillDay(firstDayIndex, i - firstDayIndex + 1);
+//     }
+// }
 
-function fillDay(tbody, firstDayIndex, dayNumber)  {
+function fillDay(tbody, firstDayIndex, clindex, dayNumber)  {
     const calendarWeek = tbody.querySelectorAll('tr');
-    const rowIndex = weekOfMonth(firstDayIndex, dayNumber);
+    const rowIndex = weekOfMonth(firstDayIndex, clindex);
     const row = calendarWeek[rowIndex];
     const cells = row.querySelectorAll('td');
     
@@ -236,7 +255,7 @@ function fillDay(tbody, firstDayIndex, dayNumber)  {
     }
 
 
-    const cellIndex = (firstDayIndex + dayNumber - 1) % 7 + 1;
+    const cellIndex = (firstDayIndex + clindex - 1) % 7 + 1;
     cells[cellIndex].textContent = dayNumber;
     if (
         selectedDate && 

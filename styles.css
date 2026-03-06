@@ -120,10 +120,29 @@ td, th {
     align-items: center;
 }
 
+.calendar-row{
+    height: 38px;
+}
+
 .week-number {
     width: 32px;
     text-align: center;
     font-weight: bold;
     color: #666;
     margin-right: 4px;
+}
+
+.month-slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
