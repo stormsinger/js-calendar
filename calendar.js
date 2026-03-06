@@ -91,15 +91,26 @@ function createTable(calendarBox, animation) {
         const cell = event.target;
         if (cell.tagName !== 'TD') return;
 
+        if (cell.classList.contains("week-number")) return;
+
         const dayNumber = Number(cell.textContent);
         if (!dayNumber) return;
+
+        let year = currentDate.getFullYear();
+        let month = currentDate.getMonth();
+        if (cell.classList.contains("prev-month")) {
+                month -= 1;
+            }
+        if (cell.classList.contains("next-month")) {
+            month += 1;
+        }
 
         const activeDay = document.querySelector('.active-day');
         if (activeDay) activeDay.classList.remove('active-day');
 
         cell.classList.add('active-day');
 
-        selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
+        selectedDate = new Date(year, month, dayNumber);
 
         onDaySelect(selectedDate);
     });
@@ -226,9 +237,12 @@ function fillDay(tbody, firstDayIndex, clindex, realDate) {
 
     const cellIndex = (firstDayIndex + clindex - 1) % 7 + 1;
     cells[cellIndex].textContent = realDate.getDate();
-    if(realDate.getMonth() !== currentDate.getMonth()) {
-        cells[cellIndex].classList.add('not-current-month');
+    if(realDate.getMonth() > currentDate.getMonth()) {
+        cells[cellIndex].classList.add('next-month');
+    } else if (realDate.getMonth() < currentDate.getMonth()) {
+        cells[cellIndex].classList.add('prev-month');
     }
+
     if (
         selectedDate && 
         selectedDate.getDate() === realDate.getDate() && 

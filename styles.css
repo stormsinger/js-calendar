@@ -186,7 +186,7 @@ td, th {
         opacity: 1;
     }
 }
-.not-current-month {
+.prev-month, .next-month {
     color: #aaa;
 }
 
