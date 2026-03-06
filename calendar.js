@@ -74,8 +74,10 @@ function createTable(calendarBox, animation) {
 
     const headerRow = document.createElement('tr');
     const emptyTh = document.createElement('th');
-
-    ['Week','P','A','T','K','Pn','Š','S'].forEach(d => {
+    emptyTh.textContent = 'Week';
+    emptyTh.classList.add('week-number');
+    headerRow.append(emptyTh);
+    ['P','A','T','K','Pn','Š','S'].forEach(d => {
         const th = document.createElement('th');
         th.textContent = d;
         headerRow.append(th);
@@ -98,6 +100,8 @@ function createTable(calendarBox, animation) {
         cell.classList.add('active-day');
 
         selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
+
+        onDaySelect(selectedDate);
     });
 
     return tbody;
@@ -215,7 +219,7 @@ function fillDay(tbody, firstDayIndex, clindex, realDate) {
         const weekDayIndex = realDate.getDay() === 0 ? 6 : realDate.getDay() - 1;
         const mondayDate = new Date(realDate);
         mondayDate.setDate(realDate.getDate() - weekDayIndex);
-
+        // cells[0].classList.add('week-column');
         cells[0].textContent = getISOWeekNumber(mondayDate);
     }
 

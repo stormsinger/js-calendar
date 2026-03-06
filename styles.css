@@ -6,9 +6,22 @@ body {
 #calendar {
     display: flex;
     gap: 20px;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+}
+
+#datepicker {
+    position: absolute;
+}
+
+#calendar-box {
+    display: inline-block;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.hidden {
+    display: none;
 }
 
 .calendar-container {
@@ -82,11 +95,6 @@ body {
     padding: 4px 0;
 }
 
-.calendar-nav a {
-    font-weight: bold;
-    margin: 0 4px;
-} 
-
 table {
     border-collapse: collapse;
     border: 1px solid #dcdcdc;
@@ -122,15 +130,16 @@ td, th {
 }
 
 .calendar-row{
-    height: 38px;
+    height: 18px;
 }
 
 .week-number {
-    width: 32px;
+    width: 10px;
     text-align: center;
     font-weight: bold;
     color: #666;
-    margin-right: 4px;
+    padding: 0 4px;
+    background-color: #f4f4f4;
 }
 
 .month-slide-left {
@@ -180,3 +189,4 @@ td, th {
 .not-current-month {
     color: #aaa;
 }
+
