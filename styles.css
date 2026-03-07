@@ -16,9 +16,7 @@ body {
     padding: 10px;
 }
 
-.hidden {
-    display: none;
-}
+
 
 .calendar-container {
     display: inline-block;
@@ -187,13 +185,20 @@ td, th {
 }
 
 
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.datepicker.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
 
 #date-input {
     position: absolute;
-    top: 700px;
-    left: 600px;
+    bottom: 50%;
+    right: 50%;
 }
-
 
 .datepicker {
     position: absolute;
@@ -201,12 +206,15 @@ td, th {
     transition: opacity 0.15s ease, transform 0.15s ease;
     opacity: 0;
     pointer-events: none;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+
 }
 
-.datepicker.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
+
 
 .datepicker-bottom {
     transform-origin: top;
@@ -214,4 +222,22 @@ td, th {
 
 .datepicker-top {
     transform-origin: bottom;
+}
+
+
+#calendar td:hover {
+    background: #f0f4ff;
+    cursor: pointer;
+}
+
+
+#calendar td.selected {
+    background: #3b82f6;
+    color: white;
+    border-radius: 4px;
+}
+
+#calendar td.today {
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
 }

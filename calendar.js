@@ -12,7 +12,6 @@ function renderCalendar(date, animation) {
     createNavigation(calendarBox, date);
     const tbody = createTable(calendarBox, animation);
     fillDays(tbody, date);
-    highlightToday(tbody, date);
     highlightSelected(tbody, date);
     highlightWeekends(tbody);
 }
@@ -112,7 +111,7 @@ function createTable(calendarBox, animation) {
 
         selectedDate = new Date(year, month, dayNumber);
 
-        onDaySelect(selectedDate);
+        onDaySelect(selectedDate, cell);
     });
 
     return tbody;
@@ -230,7 +229,6 @@ function fillDay(tbody, firstDayIndex, clindex, realDate) {
         const weekDayIndex = realDate.getDay() === 0 ? 6 : realDate.getDay() - 1;
         const mondayDate = new Date(realDate);
         mondayDate.setDate(realDate.getDate() - weekDayIndex);
-        // cells[0].classList.add('week-column');
         cells[0].textContent = getISOWeekNumber(mondayDate);
     }
 
@@ -243,6 +241,16 @@ function fillDay(tbody, firstDayIndex, clindex, realDate) {
         cells[cellIndex].classList.add('prev-month');
     }
 
+    const today = new Date();
+    if (
+        realDate.getDate() === today.getDate() &&
+        realDate.getMonth() === today.getMonth() &&
+        realDate.getFullYear() === today.getFullYear()
+    ) {
+        cells[cellIndex].classList.add('today');
+    }
+
+
     if (
         selectedDate && 
         selectedDate.getDate() === realDate.getDate() && 
@@ -251,14 +259,6 @@ function fillDay(tbody, firstDayIndex, clindex, realDate) {
     ) {
         cells[cellIndex].classList.add('active-day');
     }
-}
-
-function highlightToday(tbody,date) {
-    const today = new Date();
-    if (today.getMonth() !== date.getMonth() || today.getFullYear() !== date.getFullYear()) return;
-
-    const firstDayIndex = getFirstDayIndex(date);
-    styleDay(tbody, today.getDate(), firstDayIndex, 'today');
 }
 
 //there is bug with this function, when you select a day and then switch month, sometimes different day will be highlighted in the new month if it exists  
@@ -278,12 +278,9 @@ function highlightWeekends(tbody) {
     });
 }
 
-
-
 function weekOfMonth(firstDayIndex, dayNumber) {
     return Math.floor((firstDayIndex + dayNumber - 1) / 7);
 }
-
 
 function styleDay(tbody, dayNumber, firstDayOfMonthIndex, style) {
     const rows = tbody.querySelectorAll('tr');
