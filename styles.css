@@ -8,10 +8,6 @@ body {
     gap: 20px;
 }
 
-#datepicker {
-    position: absolute;
-}
-
 #calendar-box {
     display: inline-block;
     background: white;
@@ -190,3 +186,32 @@ td, th {
     color: #aaa;
 }
 
+
+
+#date-input {
+    position: absolute;
+    top: 700px;
+    left: 600px;
+}
+
+
+.datepicker {
+    position: absolute;
+    z-index: 9999;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.datepicker.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.datepicker-bottom {
+    transform-origin: top;
+}
+
+.datepicker-top {
+    transform-origin: bottom;
+}

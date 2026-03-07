@@ -1,5 +1,34 @@
 const dateInput = document.querySelector("#date-input");
 const datepicker = document.querySelector("#datepicker");
+datepicker.classList.add("datepicker");
+
+function positionDatePicker(input, picker) {
+    const rect = input.getBoundingClientRect();
+    const pickerRect = picker.getBoundingClientRect();
+
+    picker.classList.remove("datepicker-top", "datepicker-bottom");
+
+    let top = rect.bottom + window.scrollY;
+    let left = rect.left + window.scrollX;
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow < pickerRect.height + 10) {
+        top = rect.top - pickerRect.height + window.scrollY;
+        picker.classList.add("datepicker-top");
+    } else {
+        picker.classList.add("datepicker-bottom");
+    }
+
+    const spaceRight = window.innerWidth - rect.left;
+    if (spaceRight < pickerRect.width) {
+        left = rect.right - pickerRect.width + window.scrollX;
+    }
+
+    picker.style.top = top + "px";
+    picker.style.left = left + "px";
+}
+
+
 
 datepicker.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -7,17 +36,18 @@ datepicker.addEventListener("click", (e) => {
 
 dateInput.addEventListener("click", (e) => {
     e.stopPropagation();
-    datepicker.classList.toggle("hidden");
+    datepicker.classList.add("visible");
+    datepicker.classList.remove("hidden");
+    positionDatePicker(dateInput, datepicker);
 });
+
 
 document.addEventListener("click", (e) => {
-    const insidePicker = datepicker.contains(e.target);
-    const insideInput = dateInput.contains(e.target);
-
-    if (!insidePicker && !insideInput) {
-        datepicker.classList.add("hidden");
+    if (!datepicker.contains(e.target) && !dateInput.contains(e.target)) {
+        datepicker.classList.remove("visible");
     }
 });
+
 
 function onDaySelect(date) {
     const y = date.getFullYear();
@@ -27,3 +57,4 @@ function onDaySelect(date) {
     dateInput.value = `${y}-${m}-${d}`;   // įrašo datą į input
     datepicker.classList.add("hidden");   // uždaro DatePicker
 }
+
