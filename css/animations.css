@@ -1,0 +1,44 @@
+.grow-from-center {
+    animation: growFromCenter 0.3s ease-out;
+}
+
+@keyframes growFromCenter {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.month-slide-left {
+    animation: slideLeft 0.3s ease-out;
+}
+
+@keyframes slideLeft {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.month-slide-right {
+    animation: slideRight 0.3s ease-out;
+}
+
+@keyframes slideRight {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

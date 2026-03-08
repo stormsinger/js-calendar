@@ -1,0 +1,24 @@
+.datepicker {
+    position: absolute;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.datepicker.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.datepicker-bottom {
+    transform-origin: top;
+}
+
+.datepicker-top {
+    transform-origin: bottom;
+}
