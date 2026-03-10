@@ -4,17 +4,24 @@ import Positioning from "./Positioning.js";
 import DateUtils from "./DateUtils.js";
 
 export default class DatePicker {
-    constructor(inputSelector, pickerSelector) {
+    constructor(inputSelector, pickerSelector, options = {}) {
         this.input = document.querySelector(inputSelector);
         this.container = document.querySelector(pickerSelector);
 
         this.currentDate = new Date();
         this.selectedDate = null;
 
-        this.monthNames = [
-            "Sausis","Vasaris","Kovas","Balandis","Gegužė","Birželis",
-            "Liepa","Rugpjūtis","Rugsėjis","Spalis","Lapkritis","Gruodis"
-        ];
+        this.options = {
+            minDate: null,
+            maxDate: null,
+            firstDayOfWeek: 1,
+            locale: 'lt-LT',
+            ...options
+        };
+
+        this.monthNames = Array.from({ length: 12 }, (_, i) =>
+            new Intl.DateTimeFormat(this.options.locale, { month: "long" }).format(new Date(2024, i, 2))
+        );
 
         this.utils = DateUtils;
         this.renderer = new CalendarRenderer(this);
@@ -68,4 +75,10 @@ export default class DatePicker {
     }
 }
 
-new DatePicker("#date-input", "#picker-container");
+const dp = new DatePicker("#date-input", "#picker-container", {
+    minDate: '2026-01-07',
+    maxDate: '2026-04-30',
+    firstDayOfWeek: 1,
+    locale: 'en-US'
+});
+

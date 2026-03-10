@@ -51,3 +51,13 @@
 .next-month {
     color: #aaa;
 }
+
+.calendar-container td.disabled {
+    pointer-events: none;
+    opacity: 0.4;
+    color: #999;
+    cursor: default;
+}
+.calendar-container td.disabled:hover {
+    background: none;
+}
