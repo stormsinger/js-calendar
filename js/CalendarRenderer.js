@@ -27,13 +27,27 @@ export default class CalendarRenderer {
         const headerRow = document.createElement("tr");
         const emptyTh = document.createElement("th");
 
-        emptyTh.textContent = 'Week';
+        const weekLabel = {
+            "lt-LT": "Sav.",
+            "en-US": "Wk",
+            "fr-FR": "Sem.",
+            "de-DE": "KW",
+            "es-ES": "Sem.",
+            "it-IT": "Sett.",
+            "pl-PL": "Tydz.",
+            "sv-SE": "v.",
+            "da-DK": "uge",
+            "fi-FI": "vk"
+        }[this.dp.options.locale] || "Wk";
+
+        emptyTh.textContent = weekLabel;
+
         emptyTh.classList.add('week-number');
         headerRow.append(emptyTh);
 
         const baseDays = [...Array(7).keys()].map(i =>
             new Intl.DateTimeFormat(this.dp.options.locale, { weekday: "short" })
-                .format(new Date(1970, 0, 4 + i)) // 1970-01-04 yra sekmadienis
+                .format(new Date(1970, 0, 4 + i)) 
         );
 
         const rotatedDays = [
@@ -60,8 +74,8 @@ export default class CalendarRenderer {
         const weekCell = document.createElement("td");
         weekCell.classList.add("week-number");
 
-        const firstDayOfWeek = new Date(year, month, 1 - firstDayIndex + row * 7);
-        weekCell.textContent = this.dp.utils.getISOWeekNumber(firstDayOfWeek);
+        const rowStartDate = new Date(year, month, 1 - firstDayIndex + row * 7);
+        weekCell.textContent = this.dp.utils.getISOWeekNumber(rowStartDate);
 
         tr.append(weekCell);
         return tr;
@@ -89,12 +103,10 @@ export default class CalendarRenderer {
             cellDate = new Date(year, month, dayNumber);
         }
 
-        const today = new Date();
-        if (
-            cellDate.getFullYear() === today.getFullYear() &&
-            cellDate.getMonth() === today.getMonth() &&
-            cellDate.getDate() === today.getDate()
-        ) {
+        const iso = this.dp.utils.toLocalISO(cellDate);
+        const todayIso = this.dp.utils.toLocalISO(new Date());
+
+        if (iso === todayIso) {
             td.classList.add("today");
         }
         
@@ -106,20 +118,29 @@ export default class CalendarRenderer {
         if (min && cellDate < min) isDisabled = true;
         if (max && cellDate > max) isDisabled = true;
 
-        if (isDisabled) {
-            td.classList.add("disabled");
+        if (this.dp.options.disabledDates?.includes(iso)) {
+            isDisabled = true;
         }
 
-        if (
-            this.dp.selectedDate &&
-            cellDate.getFullYear() === this.dp.selectedDate.getFullYear() &&
-            cellDate.getMonth() === this.dp.selectedDate.getMonth() &&
-            cellDate.getDate() === this.dp.selectedDate.getDate()
-        ) {
-            td.classList.add("selected");
+        if (isDisabled) {
+            td.classList.add("disabled");
+            td.dataset.disabled = "true";
+        }
+
+        if (this.dp.options.highlightedDates?.includes(iso)) {
+            td.classList.add("highlighted");
+        }
+
+        if (this.dp.selectedDate) {
+            const selectedIso = this.dp.utils.toLocalISO(this.dp.selectedDate);
+            if (iso === selectedIso) {
+                td.classList.add("selected");
+            }
         }
 
         td.addEventListener("click", () => {
+            if (td.dataset.disabled === "true") return;
+
             this.dp.selectedDate = cellDate;
             this.dp.currentDate = new Date(cellDate);
             this.dp.input.value = this.dp.utils.format(cellDate);
@@ -135,17 +156,23 @@ export default class CalendarRenderer {
         const month = this.dp.currentDate.getMonth();
 
         const { daysInMonth, firstDayIndex, prevMonthDays } =
-            this.dp.utils.getMonthMetrics(year, month);
+            this.dp.utils.getMonthMetrics(
+                year, 
+                month, 
+                this.dp.options.locale, 
+                this.dp.options.firstDayOfWeek
+            );
 
-        const adjustedFirstDayIndex =
-        (firstDayIndex - this.dp.options.firstDayOfWeek + 7) % 7;
+        const saturday = (6 - this.dp.options.firstDayOfWeek + 7) % 7;
+        const sunday   = (7 - this.dp.options.firstDayOfWeek) % 7;
+        const weekendCols = new Set([saturday, sunday]);
 
         for (let row = 0; row < 6; row++) {
-            const tr = this.createWeekRow(year, month, adjustedFirstDayIndex, row);
+            const tr = this.createWeekRow(year, month, firstDayIndex, row);
 
             for (let col = 0; col < 7; col++) {
                 const cellIndex = row * 7 + col;
-                const dayNumber = cellIndex - adjustedFirstDayIndex + 1;
+                const dayNumber = cellIndex - firstDayIndex + 1;
 
                 const td = this.createDayCell(
                     year,
@@ -155,12 +182,7 @@ export default class CalendarRenderer {
                     prevMonthDays
                 );
 
-                const weekendCols = [
-                    (6 - this.dp.options.firstDayOfWeek + 7) % 7, // šeštadienis
-                    (0 - this.dp.options.firstDayOfWeek + 7) % 7  // sekmadienis
-                ];
-
-                if (weekendCols.includes(col)) {
+                if (weekendCols.has(col)) {
                     td.classList.add("weekend");
                 }
 

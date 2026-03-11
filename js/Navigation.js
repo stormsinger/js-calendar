@@ -15,7 +15,12 @@ export default class Navigation {
         btnPrevYear.textContent = '<<';
 
         const labelYear = document.createElement('a');
-        labelYear.textContent = `${date.getFullYear()}`;
+        const formattedYear = new Intl.DateTimeFormat(
+            this.dp.options.locale,
+            { year: "numeric" }
+        ).format(date);
+
+        labelYear.textContent = `${formattedYear}`;
 
         const btnNextYear = document.createElement('button');
         btnNextYear.textContent = '>>';
@@ -36,13 +41,24 @@ export default class Navigation {
         btnPrevMonth.textContent = '<';
 
         const labelMonth = document.createElement('a');
-        labelMonth.textContent = `${this.dp.monthNames[date.getMonth()]}`;
+        
+        const formattedMonth = new Intl.DateTimeFormat(
+            this.dp.options.locale,
+            { month: "long" }
+        ).format(date);
+
+        labelMonth.textContent = `${formattedMonth}`;
 
         const btnNextMonth = document.createElement('button');
         btnNextMonth.textContent = '>';
 
         const btnToday = document.createElement('button');
-        btnToday.textContent = 'Today';
+        const today = new Date();
+        const formattedToday = new Intl.DateTimeFormat(
+            this.dp.options.locale,
+            { day: "numeric", month: "long", year: "numeric" }
+        ).format(today);
+        btnToday.textContent = `${formattedToday}`;
 
         navBottom.append(btnPrevMonth, labelMonth, btnNextMonth, btnToday);
         this.dp.calendarRoot.append(navBottom);
@@ -52,28 +68,32 @@ export default class Navigation {
 
     attachYearNavigationEvents(btnPrevYear, btnNextYear) {
         btnPrevYear.addEventListener("click", () => {
-            this.dp.currentDate.setFullYear(this.dp.currentDate.getFullYear() - 1);
-            this.dp.renderCalendar("month-slide-right");
+            const d = new Date(this.dp.currentDate);
+            d.setFullYear(d.getFullYear() - 1);
+            this.dp.renderCalendar("month-slide-right", d);
             this.dp.positioning.positionPicker();
         });
 
         btnNextYear.addEventListener("click", () => {
-            this.dp.currentDate.setFullYear(this.dp.currentDate.getFullYear() + 1);
-            this.dp.renderCalendar("month-slide-left");
+            const d = new Date(this.dp.currentDate);
+            d.setFullYear(d.getFullYear() + 1);
+            this.dp.renderCalendar("month-slide-left", d);
             this.dp.positioning.positionPicker();
         });
     }
 
     attachMonthNavigationEvents(btnPrevMonth, btnNextMonth) {
         btnPrevMonth.addEventListener("click", () => {
-            this.dp.currentDate.setMonth(this.dp.currentDate.getMonth() - 1);
-            this.dp.renderCalendar("month-slide-right");
+            const d = new Date(this.dp.currentDate);
+            d.setMonth(d.getMonth() - 1);
+            this.dp.renderCalendar("month-slide-right", d);
             this.dp.positioning.positionPicker();
         });
 
         btnNextMonth.addEventListener("click", () => {
-            this.dp.currentDate.setMonth(this.dp.currentDate.getMonth() + 1);
-            this.dp.renderCalendar("month-slide-left");
+            const d = new Date(this.dp.currentDate);
+            d.setMonth(d.getMonth() + 1);
+            this.dp.renderCalendar("month-slide-left", d);
             this.dp.positioning.positionPicker();
         });
     }
@@ -81,8 +101,8 @@ export default class Navigation {
     attachTodayEvent(btnToday) {
         btnToday.addEventListener("click", () => {
             const today = new Date();
-            this.dp.currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            this.dp.renderCalendar("grow-from-center");
+            const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            this.dp.renderCalendar("grow-from-center", d);
             this.dp.positioning.positionPicker();
         });
     }

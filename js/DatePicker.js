@@ -36,7 +36,11 @@ export default class DatePicker {
         this.positioning.enableAutoRepositioning();
     }
 
-    renderCalendar(animation) {
+    renderCalendar(animation, newDate = null) {
+        if (newDate) {
+            this.currentDate = newDate;
+        }
+
         this.renderer.clearRoot();
         this.renderer.createCalendarRoot();
 
@@ -76,9 +80,11 @@ export default class DatePicker {
 }
 
 const dp = new DatePicker("#date-input", "#picker-container", {
-    minDate: '2026-01-07',
-    maxDate: '2026-04-30',
+    minDate: '2026-03-03',
+    maxDate: '2026-03-24',
+    disabledDates: ['2026-03-15', '2026-03-18'],
+    highlightedDates: ['2026-03-10', '2026-03-20'],
     firstDayOfWeek: 1,
-    locale: 'en-US'
+    locale: 'lt-LT'
 });
 
