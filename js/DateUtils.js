@@ -37,7 +37,32 @@ export default class DateUtils {
         return `${y}-${m}-${d}`;
     }
 
+    static addDays(date, days) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + days);
+        return d;
+    }
+
     static format(date) {
         return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+
+    static addMonths(date, months) {
+        const d = new Date(date);
+        d.setMonth(d.getMonth() + months);
+        return d;
+    }
+
+    static addYears(date, years) {
+        const d = new Date(date);
+        const month = d.getMonth();
+        d.setFullYear(d.getFullYear() + years);
+
+        // jei mėnuo pasikeitė – reiškia rollover įvyko
+        if (d.getMonth() !== month) {
+            d.setDate(0); // nustato į paskutinę praėjusio mėnesio dieną
+        }
+
+        return d;
     }
 };

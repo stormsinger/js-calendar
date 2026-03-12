@@ -1,4 +1,5 @@
 import DomUtils from "./DomUtils.js";
+import DateUtils from "./DateUtils.js";
 
 export default class CalendarRenderer {
     constructor(dp) {
@@ -19,12 +20,15 @@ export default class CalendarRenderer {
 
     createCalendarTable(animation) {
         const table = document.createElement("table");
+        table.setAttribute("role", "grid");
+        this.calendarElement = table;
         if (animation) table.classList.add(animation);
 
         const thead = document.createElement("thead");
         const tbody = document.createElement("tbody");
 
         const headerRow = document.createElement("tr");
+        headerRow.setAttribute("role", "row");
         const emptyTh = document.createElement("th");
 
         const weekLabel = {
@@ -70,12 +74,14 @@ export default class CalendarRenderer {
 
     createWeekRow(year, month, firstDayIndex, row) {
         const tr = document.createElement("tr");
-
+        tr.setAttribute("role", "row");
+        
         const weekCell = document.createElement("td");
         weekCell.classList.add("week-number");
+        weekCell.setAttribute("role", "rowheader");
 
         const rowStartDate = new Date(year, month, 1 - firstDayIndex + row * 7);
-        weekCell.textContent = this.dp.utils.getISOWeekNumber(rowStartDate);
+        weekCell.textContent = DateUtils.getISOWeekNumber(rowStartDate);
 
         tr.append(weekCell);
         return tr;
@@ -83,7 +89,13 @@ export default class CalendarRenderer {
 
     createDayCell(year, month, dayNumber, daysInMonth, prevMonthDays) {
         const td = document.createElement("td");
+        td.setAttribute("role", "gridcell");
+        td.setAttribute("tabindex", "-1");
         let cellDate;
+
+        td.addEventListener("keydown", (e) => {
+            this.dp.handleDayKeydown(e, cellDate);
+        });
 
         if (dayNumber <= 0) {
             const realDay = prevMonthDays + dayNumber;
@@ -103,11 +115,14 @@ export default class CalendarRenderer {
             cellDate = new Date(year, month, dayNumber);
         }
 
-        const iso = this.dp.utils.toLocalISO(cellDate);
-        const todayIso = this.dp.utils.toLocalISO(new Date());
+        const iso = DateUtils.toLocalISO(cellDate);
+        const todayIso = DateUtils.toLocalISO(new Date());
+
+        td.dataset.iso = iso;
 
         if (iso === todayIso) {
             td.classList.add("today");
+            td.setAttribute("tabindex", "0");
         }
         
         const min = this.dp.options.minDate ? new Date(this.dp.options.minDate) : null;
@@ -122,41 +137,43 @@ export default class CalendarRenderer {
             isDisabled = true;
         }
 
+        td.setAttribute("aria-selected", "false");  
+
         if (isDisabled) {
             td.classList.add("disabled");
             td.dataset.disabled = "true";
-        }
+            td.setAttribute("aria-disabled", "true");
+            td.setAttribute("tabindex", "-1");
+          }
 
         if (this.dp.options.highlightedDates?.includes(iso)) {
             td.classList.add("highlighted");
         }
 
         if (this.dp.selectedDate) {
-            const selectedIso = this.dp.utils.toLocalISO(this.dp.selectedDate);
+            const selectedIso = DateUtils.toLocalISO(this.dp.selectedDate);
             if (iso === selectedIso) {
                 td.classList.add("selected");
+                td.setAttribute("aria-selected", "true");
+                td.setAttribute("tabindex", "0");
             }
         }
 
         td.addEventListener("click", () => {
-            if (td.dataset.disabled === "true") return;
-
-            this.dp.selectedDate = cellDate;
-            this.dp.currentDate = new Date(cellDate);
-            this.dp.input.value = this.dp.utils.format(cellDate);
-            this.dp.renderCalendar("grow-from-center");
-            this.dp.positioning.positionPicker();
+            this.dp.selectDate(cellDate);
         });
 
         return td;
     }
+
+
 
     fillCalendarDays(tbody) {
         const year = this.dp.currentDate.getFullYear();
         const month = this.dp.currentDate.getMonth();
 
         const { daysInMonth, firstDayIndex, prevMonthDays } =
-            this.dp.utils.getMonthMetrics(
+            DateUtils.getMonthMetrics(
                 year, 
                 month, 
                 this.dp.options.locale, 

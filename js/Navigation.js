@@ -12,9 +12,11 @@ export default class Navigation {
         navTop.classList.add('nav-top');
 
         const btnPrevYear = document.createElement('button');
+        btnPrevYear.setAttribute("tabindex", "-1");
         btnPrevYear.textContent = '<<';
 
         const labelYear = document.createElement('a');
+        labelYear.setAttribute("tabindex", "-1");
         const formattedYear = new Intl.DateTimeFormat(
             this.dp.options.locale,
             { year: "numeric" }
@@ -23,6 +25,7 @@ export default class Navigation {
         labelYear.textContent = `${formattedYear}`;
 
         const btnNextYear = document.createElement('button');
+        btnNextYear.setAttribute("tabindex", "-1");
         btnNextYear.textContent = '>>';
 
         navTop.append(btnPrevYear, labelYear, btnNextYear);
@@ -38,10 +41,11 @@ export default class Navigation {
         navBottom.classList.add('nav-bottom');
 
         const btnPrevMonth = document.createElement('button');
+        btnPrevMonth.setAttribute("tabindex", "-1");
         btnPrevMonth.textContent = '<';
 
         const labelMonth = document.createElement('a');
-        
+        labelMonth.setAttribute("tabindex", "-1");
         const formattedMonth = new Intl.DateTimeFormat(
             this.dp.options.locale,
             { month: "long" }
@@ -50,9 +54,11 @@ export default class Navigation {
         labelMonth.textContent = `${formattedMonth}`;
 
         const btnNextMonth = document.createElement('button');
+        btnNextMonth.setAttribute("tabindex", "-1");
         btnNextMonth.textContent = '>';
 
         const btnToday = document.createElement('button');
+        btnToday.setAttribute("tabindex", "-1");
         const today = new Date();
         const formattedToday = new Intl.DateTimeFormat(
             this.dp.options.locale,
