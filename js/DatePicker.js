@@ -5,37 +5,116 @@ import DateUtils from "./DateUtils.js";
 
 export default class DatePicker {
     constructor(inputSelector, pickerSelector, options = {}) {
+        if (typeof inputSelector !== "string" || !inputSelector.trim()) {
+            throw new TypeError("DatePicker: inputSelector must be a non-empty CSS selector string.");
+        }
+
+        if (typeof pickerSelector !== "string" || !pickerSelector.trim()) {
+            throw new TypeError("DatePicker: pickerSelector must be a non-empty CSS selector string.");
+        }
+
         this.input = document.querySelector(inputSelector);
+        if (!this.input) {
+            throw new Error(`DatePicker: input element not found for selector "${inputSelector}".`);
+        }
+
+        if (this.input.tagName !== "INPUT") {
+            throw new Error(`DatePicker: selector "${inputSelector}" must target an <input> element.`);
+        }
+
         this.input.setAttribute("aria-haspopup", "dialog");
         this.input.setAttribute("aria-expanded", "false");
-        this.input.setAttribute("aria-controls", "datepicker-dialog");
 
         this.container = document.querySelector(pickerSelector);
+        if (!this.container) {
+            throw new Error(`DatePicker: picker container not found for selector "${pickerSelector}".`);
+        }
+
+        if (!this.container.querySelector("#calendar, .calendar-root")) {
+            throw new Error("DatePicker: picker container must include an element matching \"#calendar\" or \".calendar-root\".");
+        }
+
+        if (typeof DatePicker._instanceCount !== "number") {
+            DatePicker._instanceCount = 0;
+        }
+
+        if (!this.container.id) {
+            DatePicker._instanceCount += 1;
+            this.container.id = `datepicker-dialog-${DatePicker._instanceCount}`;
+        }
+
+        this.input.setAttribute("aria-controls", this.container.id);
+
         this.container.setAttribute("role", "dialog");
         this.container.setAttribute("aria-modal", "true");
-        this.container.setAttribute("id", "datepicker-dialog");
 
         this.currentDate = new Date();
         this.selectedDate = null;
 
-        this.options = {
+        const mergedOptions = {
             minDate: null,
             maxDate: null,
+            disabledDates: [],
+            highlightedDates: [],
+            onSelect: null,
             firstDayOfWeek: 1,
-            locale: 'en-US',
+            locale: "en-US",
             ...options
         };
 
-        this.monthNames = Array.from({ length: 12 }, (_, i) =>
-            new Intl.DateTimeFormat(this.options.locale, { month: "long" }).format(new Date(2024, i, 2))
-        );
+        this.options = {
+            ...mergedOptions,
+            minDate: this.normalizeDateValue(mergedOptions.minDate),
+            maxDate: this.normalizeDateValue(mergedOptions.maxDate),
+            disabledDates: this.normalizeDateList(mergedOptions.disabledDates),
+            highlightedDates: this.normalizeDateList(mergedOptions.highlightedDates)
+        };
 
         this.renderer = new CalendarRenderer(this);
         this.navigation = new Navigation(this);
         this.positioning = new Positioning(this);
-        this.calendarElement = this.renderer.calendarElement
+        this.calendarElement = this.renderer.calendarElement;
 
         this.initialize();
+    }
+
+    normalizeDateValue(value) {
+        if (!value) return null;
+
+        if (value instanceof Date) {
+            return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        }
+
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            const [year, month, day] = value.split("-").map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return null;
+
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    normalizeDateList(list) {
+        if (!Array.isArray(list)) return [];
+
+        return list
+            .map((value) => {
+                if (value instanceof Date) {
+                    return DateUtils.toLocalISO(value);
+                }
+
+                if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+                    return value;
+                }
+
+                const parsed = new Date(value);
+                if (Number.isNaN(parsed.getTime())) return null;
+
+                return DateUtils.toLocalISO(parsed);
+            })
+            .filter(Boolean);
     }
 
     initialize() {
@@ -112,7 +191,6 @@ export default class DatePicker {
         });
 
         this.input.addEventListener("keydown", (e) => {
-            // Enter arba Space
             if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 this.renderCalendar("grow-from-center");
@@ -120,7 +198,6 @@ export default class DatePicker {
                 return;
             }
 
-            // ArrowDown (su arba be Alt)
             if (e.key === "ArrowDown") {
                 e.preventDefault();
                 this.renderCalendar("grow-from-center");
@@ -147,8 +224,8 @@ export default class DatePicker {
     }
 
     handleDayKeydown(e, cellDate) {
-        let newDate = null;
-        const jsDay = cellDate.getDay(); // 0–6
+        let newDate;
+        const jsDay = cellDate.getDay();
         const weekDay = (jsDay === 0 ? 7 : jsDay);
 
         switch (e.key) {
@@ -205,13 +282,11 @@ export default class DatePicker {
     close() {
         this.container.classList.remove("open");
 
-        // nuimti fokusą nuo bet kurio td
         if (this.calendarElement) {
             const focused = this.calendarElement.querySelector("[tabindex='0']");
             if (focused) focused.setAttribute("tabindex", "-1");
         }
 
-        // grąžinti fokusą į input
         this.input.focus();
         this.input.setAttribute("aria-expanded", "false");
     }
@@ -239,16 +314,16 @@ export default class DatePicker {
         this.selectedDate = new Date(date);
         this.currentDate = new Date(date);
         this.input.value = DateUtils.format(date);
+
+        if (typeof this.options.onSelect === "function") {
+            this.options.onSelect(new Date(this.selectedDate));
+        }
+
         this.close();
     }
-}
 
-// const dp = new DatePicker("#date-input", "#picker-container", {
-//     minDate: '2026-03-03',
-//     maxDate: '2026-04-04',
-//     disabledDates: ['2026-03-15', '2026-03-18'],
-//     highlightedDates: ['2026-03-11', '2026-03-20'],
-//     firstDayOfWeek: 1,
-//     locale: 'en-US'
-// });
+    destroy() {
+        this.positioning.destroy();
+    }
+}
 

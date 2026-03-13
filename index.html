@@ -6,25 +6,164 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>Document</title>
+    <title>DatePicker Demo</title>
     <link rel="stylesheet" href="css/datepicker.css">
     <link rel="stylesheet" href="css/calendar.css">
     <link rel="stylesheet" href="css/navigation.css">
     <link rel="stylesheet" href="css/animations.css">
+    <style>
+        :root {
+            --page-bg: linear-gradient(180deg, #f5f8ff 0%, #eef3fb 100%);
+            --card-bg: #ffffff;
+            --card-border: #d9e4f3;
+            --text-main: #1d2a39;
+            --text-muted: #5f7085;
+            --accent: #1e5fb5;
+            --accent-soft: #e8f1ff;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+            background: var(--page-bg);
+            min-height: 100vh;
+        }
+
+        .demo-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1rem 3rem;
+        }
+
+        h1 {
+            margin: 0 0 0.4rem;
+        }
+
+        .lead {
+            margin: 0 0 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .demo-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: 0 10px 24px rgba(11, 42, 86, 0.08);
+        }
+
+        .demo-card h2 {
+            font-size: 1.05rem;
+            margin: 0 0 0.35rem;
+        }
+
+        .demo-card p {
+            margin: 0 0 0.8rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .demo-input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #bccce2;
+            border-radius: 8px;
+            background: #fff;
+            padding: 0.62rem 0.72rem;
+            font-size: 0.97rem;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .demo-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .event-output {
+            margin-top: 0.7rem;
+            font-size: 0.88rem;
+            color: var(--accent);
+            min-height: 1.2rem;
+        }
+    </style>
 </head>
 <body>
-    <div>
-        <h2>Picker component no options selected</h2>
-        <input id="date-input" type="text" readonly>
-        <div id="picker-container" class="datepicker">
-            <div id="calendar"></div>
-        </div>
+    <main class="demo-wrap">
+        <h1>DatePicker Demo Gallery</h1>
+        <p class="lead">Four practical configurations for portfolio showcase and API testing.</p>
 
-        <script type="module">
-            import DatePicker from "./js/DatePicker.js";
+        <section class="demo-grid">
+            <article class="demo-card">
+                <h2>1. Basic Usage</h2>
+                <p>Default settings with keyboard and mouse support.</p>
+                <input id="date-input-basic" class="demo-input" type="text" readonly placeholder="Pick a date">
+                <div id="picker-container-basic" class="datepicker">
+                    <div class="calendar-root"></div>
+                </div>
+            </article>
 
-            new DatePicker("#date-input", "#picker-container");
-        </script>
-    </div>
+            <article class="demo-card">
+                <h2>2. Min/Max Range</h2>
+                <p>Selection restricted to a fixed date range.</p>
+                <input id="date-input-range" class="demo-input" type="text" readonly placeholder="Pick within 2026">
+                <div id="picker-container-range" class="datepicker">
+                    <div class="calendar-root"></div>
+                </div>
+            </article>
+
+            <article class="demo-card">
+                <h2>3. Disabled + Highlighted</h2>
+                <p>Business dates highlighted while blocked dates stay unselectable.</p>
+                <input id="date-input-advanced" class="demo-input" type="text" readonly placeholder="Check highlighted dates">
+                <div id="picker-container-advanced" class="datepicker">
+                    <div class="calendar-root"></div>
+                </div>
+            </article>
+
+            <article class="demo-card">
+                <h2>4. onSelect Callback</h2>
+                <p>Selected date is mirrored in a live output line.</p>
+                <input id="date-input-callback" class="demo-input" type="text" readonly placeholder="Pick and watch callback output">
+                <div id="picker-container-callback" class="datepicker">
+                    <div class="calendar-root"></div>
+                </div>
+                <p id="callback-output" class="event-output"></p>
+            </article>
+        </section>
+    </main>
+
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+
+        new DatePicker("#date-input-basic", "#picker-container-basic");
+
+        new DatePicker("#date-input-range", "#picker-container-range", {
+            minDate: "2026-01-01",
+            maxDate: "2026-12-31"
+        });
+
+        new DatePicker("#date-input-advanced", "#picker-container-advanced", {
+            disabledDates: ["2026-03-15", "2026-03-16", "2026-03-20"],
+            highlightedDates: ["2026-03-08", "2026-03-14", "2026-03-22"],
+            firstDayOfWeek: 1
+        });
+
+        const callbackOutput = document.querySelector("#callback-output");
+
+        new DatePicker("#date-input-callback", "#picker-container-callback", {
+            locale: "en-US",
+            onSelect: (date) => {
+                callbackOutput.textContent = `Selected: ${date.toDateString()}`;
+            }
+        });
+    </script>
 </body>
 </html>

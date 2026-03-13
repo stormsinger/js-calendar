@@ -1,6 +1,8 @@
 DatePicker
 - Accessible, keyboard‑navigable, framework‑agnostic JavaScript DatePicker.
 
+![CI](https://github.com/stormsinger/js-calendar/actions/workflows/ci.yml/badge.svg)
+
 ![DatePicker screenshot](./pics/demo.jpg)
 
 🔗 Live demo: https://stormsinger.github.io/js-calendar/
@@ -17,7 +19,7 @@ Features
 - Disabled dates
 - Highlighted dates
 - No dependencies
-- Dynamic positioning
+- Dynamic viewport-aware positioning
 - Smooth month transitions
 - Clean CSS separation
 
@@ -73,25 +75,30 @@ API Options:
         Default: 1
         Description: Sets the first day of the week (0 = Sunday, 1 = Monday).
     Option: minDate
-        Type: Date or null
+        Type: Date | string (YYYY-MM-DD) | null
         Default: null
         Description: The earliest selectable date.
     Option: maxDate
-        Type: Date or null
+        Type: Date | string (YYYY-MM-DD) | null
         Default: null
         Description: The latest selectable date.
     Option: disabledDates
-        Type: array of Date
+        Type: array of Date or string (YYYY-MM-DD)
         Default: []
         Description: Dates that cannot be selected.
     Option: highlightedDates
-        Type: array of Date
+        Type: array of Date or string (YYYY-MM-DD)
         Default: []
         Description: Dates that are visually highlighted in the calendar.
     Option: onSelect
         Type: function(date)
         Default: null
-        Description: Callback function fired when the user selects a date.
+        Description: Callback fired when the user selects a date. Receives a Date object.
+
+API Methods:
+    Method: destroy()
+        Description: Removes internal scroll and resize listeners. Call this when removing the
+                     DatePicker from the DOM to prevent memory leaks.
 
 Examples
 
@@ -123,8 +130,8 @@ Restricts the calendar so the user can only choose dates within a defined range
         import DatePicker from "./js/DatePicker.js";
 
         new DatePicker("#range-input", "#range-container", {
-            minDate: new Date(2024, 0, 1),
-            maxDate: new Date(2024, 11, 31)
+            minDate: "2024-01-01",
+            maxDate: "2024-12-31"
         });
     </script>
 
@@ -142,9 +149,9 @@ Specific dates cannot be selected. They appear visually disabled in the calendar
 
         new DatePicker("#disabled-input", "#disabled-container", {
             disabledDates: [
-                new Date(2024, 2, 15),
-                new Date(2024, 2, 16),
-                new Date(2024, 2, 20)
+                "2024-03-15",
+                "2024-03-16",
+                "2024-03-20"
             ]
         });
     </script>
@@ -163,9 +170,28 @@ Highlights specific dates without disabling them
 
         new DatePicker("#highlight-input", "#highlight-container", {
             highlightedDates: [
-                new Date(2024, 5, 10),
-                new Date(2024, 5, 12)
+                "2024-06-10",
+                "2024-06-12"
             ]
+        });
+    </script>
+
+Selection callback
+Run custom logic when a date is selected.
+
+    <input id="callback-input" type="text" readonly>
+
+    <div id="callback-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
+
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+
+        new DatePicker("#callback-input", "#callback-container", {
+            onSelect: (date) => {
+                console.log("Selected date:", date);
+            }
         });
     </script>
 

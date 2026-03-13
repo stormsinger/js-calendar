@@ -1,4 +1,3 @@
-import DomUtils from "./DomUtils.js";
 import DateUtils from "./DateUtils.js";
 
 export default class CalendarRenderer {
@@ -6,15 +5,19 @@ export default class CalendarRenderer {
         this.dp = dp;
     }
 
+    getCalendarHost() {
+        return this.dp.container.querySelector("#calendar, .calendar-root");
+    }
+
     clearRoot() {
-        const calendar = this.dp.container.querySelector('#calendar');
+        const calendar = this.getCalendarHost();
         if (calendar) calendar.replaceChildren();
     }
 
     createCalendarRoot() {
-        const calendar = this.dp.container.querySelector('#calendar');
-        this.dp.calendarRoot = document.createElement('div');
-        this.dp.calendarRoot.classList.add('calendar-container');
+        const calendar = this.getCalendarHost();
+        this.dp.calendarRoot = document.createElement("div");
+        this.dp.calendarRoot.classList.add("calendar-container");
         calendar.append(this.dp.calendarRoot);
     }
 
@@ -46,7 +49,7 @@ export default class CalendarRenderer {
 
         emptyTh.textContent = weekLabel;
 
-        emptyTh.classList.add('week-number');
+        emptyTh.classList.add("week-number");
         headerRow.append(emptyTh);
 
         const baseDays = [...Array(7).keys()].map(i =>
