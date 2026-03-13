@@ -1,77 +1,191 @@
-🔗 
-Live demo: https://stormsinger.github.io/js-calendar/
+DatePicker
+- Accessible, keyboard‑navigable, framework‑agnostic JavaScript DatePicker.
 
-DatePicker Component
-A modular, dependency‑free JavaScript DatePicker component designed for clarity, maintainability, and ease of integration. The component provides a classic calendar interface with ISO week numbers, smooth month transitions, dynamic positioning, and a fully separated architecture for rendering, navigation, utilities, and styling.
+![DatePicker screenshot](./pics/demo.jpg)
+
+🔗 Live demo: https://stormsinger.github.io/js-calendar/
+🔗 Repository: https://github.com/stormsinger/js-calendar
+
 
 Features
-- Modular architecture — clean separation of concerns across five dedicated modules.
-- Classic calendar behavior — month navigation, ISO week numbers, today highlighting, and day selection.
-- Dynamic positioning — automatically opens above or below the input depending on viewport space.
-- Smooth animations — month transitions (slideLeft, slideRight) and opening animation (growFromCenter).
-- Pure JavaScript — no external libraries or frameworks required.
-- CSS split by responsibility — styling organized into four focused files for easy maintenance.
-- Drop‑in integration — works with any project structure or build system.
+- ARIA dialog + ARIA grid
+- Full keyboard navigation
+- Modular architecture
+- Localization
+- ISO Week numbers
+- Min/max dates
+- Disabled dates
+- Highlighted dates
+- No dependencies
+- Dynamic positioning
+- Smooth month transitions
+- Clean CSS separation
 
 Folder Structure
-/datepicker
-    /css
-        datepicker.css
-        calendar.css
-        navigation.css
-        animations.css
-    /js
-        DatePicker.js
-        CalendarRenderer.js
-        Navigation.js
-        Positioning.js
-        DateUtils.js
+    /calendar
+        /css
+            datepicker.css
+            calendar.css
+            navigation.css
+            animations.css
+        /js
+            DatePicker.js
+            CalendarRenderer.js
+            Navigation.js
+            Positioning.js
+            DateUtils.js
 
-Each file has a single responsibility, making the component easy to understand, extend, and debug.
-
-Installation
+Installation:
 Include the CSS files in your HTML:
-<link rel="stylesheet" href="css/datepicker.css">
-<link rel="stylesheet" href="css/calendar.css">
-<link rel="stylesheet" href="css/navigation.css">
-<link rel="stylesheet" href="css/animations.css">
-
-
+    <link rel="stylesheet" href="css/datepicker.css">
+    <link rel="stylesheet" href="css/calendar.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/animations.css">
 Add the HTML structure:
-<input id="date-input" type="text" readonly>
+    <input id="date-input" type="text" readonly>
+    <div id="picker-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
+Usage:
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+        const picker = new DatePicker("#input", "#container", {
+            locale: "en-US",
+            firstDayOfWeek: 1
+        });
+    </script>
 
-<div id="picker-container" class="datepicker">
-    <div id="calendar"></div>
-</div>
+API Options:
+    Option: inputSelector
+        Type: string
+        Default: required
+        Description: CSS selector for the input element that triggers the DatePicker.
+    Option: containerSelector
+        Type: string
+        Default: required
+        Description: CSS selector for the container where the calendar will be rendered.
+    Option: locale
+        Type: string
+        Default: "en-US"
+        Description: Controls localization (month names, weekday names, first day of week).
+    Option: firstDayOfWeek
+        Type: number
+        Default: 1
+        Description: Sets the first day of the week (0 = Sunday, 1 = Monday).
+    Option: minDate
+        Type: Date or null
+        Default: null
+        Description: The earliest selectable date.
+    Option: maxDate
+        Type: Date or null
+        Default: null
+        Description: The latest selectable date.
+    Option: disabledDates
+        Type: array of Date
+        Default: []
+        Description: Dates that cannot be selected.
+    Option: highlightedDates
+        Type: array of Date
+        Default: []
+        Description: Dates that are visually highlighted in the calendar.
+    Option: onSelect
+        Type: function(date)
+        Default: null
+        Description: Callback function fired when the user selects a date.
 
+Examples
 
-Initialize the component:
-<script type="module">
-    import DatePicker from "./js/DatePicker.js";
-    new DatePicker("#date-input", "#picker-container");
-</script>
+Basic usage
+A simple DatePicker attached to an input and container
 
+    <input id="basic-input" type="text" readonly>
 
+    <div id="basic-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
 
-Architecture Overview
-DatePicker.js
-The main orchestrator. Manages component state, initializes modules, handles open/close logic, and triggers rendering.
-CalendarRenderer.js
-Responsible for generating the calendar UI: table structure, days, week numbers, and month grid.
-Navigation.js
-Handles month and year navigation, button creation, and event binding.
-Positioning.js
-Calculates the optimal placement of the calendar relative to the input and updates position on scroll/resize.
-DateUtils.js
-A pure utility module containing date calculations: month metrics, ISO week numbers, and formatting.
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
 
-Styling
-The component’s styling is split into four dedicated files:
-- datepicker.css — container, positioning, shadows, open/close transitions
-- calendar.css — table layout, day cells, today/selected/weekend styles
-- navigation.css — top and bottom navigation bars, buttons, labels
-- animations.css — month transitions and opening animation keyframes
-This separation ensures clarity and makes theme customization straightforward.
+        new DatePicker("#basic-input", "#basic-container");
+    </script>
+
+Min and max selectable dates
+Restricts the calendar so the user can only choose dates within a defined range
+
+    <input id="range-input" type="text" readonly>
+
+    <div id="range-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
+
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+
+        new DatePicker("#range-input", "#range-container", {
+            minDate: new Date(2024, 0, 1),
+            maxDate: new Date(2024, 11, 31)
+        });
+    </script>
+
+Disabled dates
+Specific dates cannot be selected. They appear visually disabled in the calendar
+
+    <input id="disabled-input" type="text" readonly>
+
+    <div id="disabled-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
+
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+
+        new DatePicker("#disabled-input", "#disabled-container", {
+            disabledDates: [
+                new Date(2024, 2, 15),
+                new Date(2024, 2, 16),
+                new Date(2024, 2, 20)
+            ]
+        });
+    </script>
+
+Highlighted dates
+Highlights specific dates without disabling them
+
+    <input id="highlight-input" type="text" readonly>
+
+    <div id="highlight-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
+
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+
+        new DatePicker("#highlight-input", "#highlight-container", {
+            highlightedDates: [
+                new Date(2024, 5, 10),
+                new Date(2024, 5, 12)
+            ]
+        });
+    </script>
+
+Locale and first day of week
+Changes language and week layout.
+
+    <input id="date-input" type="text" readonly>
+
+    <div id="picker-container" class="datepicker">
+        <div id="calendar"></div>
+    </div>
+
+    <script type="module">
+        import DatePicker from "./js/DatePicker.js";
+
+        new DatePicker("#date-input", "#picker-container", {
+            locale: "lt-LT",
+            firstDayOfWeek: 1
+        });
+    </script>
 
 Browser Support
 The component works in all modern browsers:

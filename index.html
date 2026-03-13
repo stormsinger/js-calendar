@@ -13,10 +13,18 @@
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
-    <input id="date-input" type="text" readonly>
-    <div id="picker-container" class="datepicker">
-        <div id="calendar"></div>
+    <div>
+        <h2>Picker component no options selected</h2>
+        <input id="date-input" type="text" readonly>
+        <div id="picker-container" class="datepicker">
+            <div id="calendar"></div>
+        </div>
+
+        <script type="module">
+            import DatePicker from "./js/DatePicker.js";
+
+            new DatePicker("#date-input", "#picker-container");
+        </script>
     </div>
-    <script type="module" src="js/DatePicker.js"></script>
 </body>
 </html>

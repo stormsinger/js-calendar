@@ -22,7 +22,7 @@ export default class DatePicker {
             minDate: null,
             maxDate: null,
             firstDayOfWeek: 1,
-            locale: 'lt-LT',
+            locale: 'en-US',
             ...options
         };
 
@@ -30,7 +30,6 @@ export default class DatePicker {
             new Intl.DateTimeFormat(this.options.locale, { month: "long" }).format(new Date(2024, i, 2))
         );
 
-        //this.utils = DateUtils;
         this.renderer = new CalendarRenderer(this);
         this.navigation = new Navigation(this);
         this.positioning = new Positioning(this);
@@ -244,12 +243,12 @@ export default class DatePicker {
     }
 }
 
-const dp = new DatePicker("#date-input", "#picker-container", {
-    minDate: '2026-03-03',
-    maxDate: '2026-04-04',
-    disabledDates: ['2026-03-15', '2026-03-18'],
-    highlightedDates: ['2026-03-11', '2026-03-20'],
-    firstDayOfWeek: 1,
-    locale: 'lt-LT'
-});
+// const dp = new DatePicker("#date-input", "#picker-container", {
+//     minDate: '2026-03-03',
+//     maxDate: '2026-04-04',
+//     disabledDates: ['2026-03-15', '2026-03-18'],
+//     highlightedDates: ['2026-03-11', '2026-03-20'],
+//     firstDayOfWeek: 1,
+//     locale: 'en-US'
+// });
 
