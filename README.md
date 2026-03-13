@@ -195,43 +195,5 @@ The component works in all modern browsers:
 - Edge
 No experimental APIs or polyfills are required.
 
-Working with GitHub Copilot
-
-There are two distinct Copilot tools, and they complement each other well:
-
-1. GitHub Copilot in VS Code (inline assistant)
-   Install the GitHub Copilot extension from the VS Code Marketplace:
-   https://marketplace.visualstudio.com/items?itemName=GitHub.copilot
-
-   Once installed you get:
-   - Inline code completions as you type
-   - Copilot Chat panel (Ctrl+Shift+I) for questions and refactoring
-   - Inline chat (Ctrl+I) to edit a selected block of code
-   - /explain, /fix, /tests slash commands in the chat
-
-   This is your everyday coding companion. It sees your local files in real time,
-   even before you commit or push anything.
-
-2. GitHub Copilot Coding Agent (this agent, on GitHub.com)
-   The coding agent is triggered from GitHub Issues or pull requests.
-   It clones the repository, reads the pushed code, makes changes, and opens a PR.
-   Because it runs in an isolated cloud environment it can only work with code that
-   has already been pushed to GitHub.
-
-Recommended hybrid workflow
-   1. Code normally in VS Code with the Copilot extension for real-time assistance.
-   2. Commit and push your work to GitHub when a feature or fix is ready.
-   3. Open a GitHub Issue describing a task you want the coding agent to handle
-      (e.g. "Add a clearDate button to the picker").
-   4. Assign the issue to GitHub Copilot — it will open a draft PR with the changes.
-   5. Review the PR in GitHub or pull it locally with:
-          git fetch origin
-          git checkout <branch-name>
-      and continue iterating in VS Code.
-
-In short: VS Code Copilot works on your local, unpushed code; the coding agent
-works on pushed code via GitHub Issues. Using both together gives you the best of
-both worlds.
-
 License
 MIT License — free to use, modify, and integrate into personal or commercial projects.
