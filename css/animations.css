@@ -14,13 +14,13 @@
 }
 
 .month-slide-left {
-    animation: slideLeft 0.3s ease-out;
+    animation: slideLeft 0.18s ease-out;
 }
 
 @keyframes slideLeft {
     from {
-        transform: translateX(100%);
-        opacity: 0;
+        transform: translateX(-20px);
+        opacity: 0.65;
     }
     to {
         transform: translateX(0);
@@ -29,13 +29,13 @@
 }
 
 .month-slide-right {
-    animation: slideRight 0.3s ease-out;
+    animation: slideRight 0.18s ease-out;
 }
 
 @keyframes slideRight {
     from {
-        transform: translateX(-100%);
-        opacity: 0;
+        transform: translateX(20px);
+        opacity: 0.65;
     }
     to {
         transform: translateX(0);

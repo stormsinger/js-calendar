@@ -25,10 +25,10 @@ export default class CalendarRenderer {
         const table = document.createElement("table");
         table.setAttribute("role", "grid");
         this.calendarElement = table;
-        if (animation) table.classList.add(animation);
 
         const thead = document.createElement("thead");
         const tbody = document.createElement("tbody");
+        if (animation) tbody.classList.add(animation);
 
         const headerRow = document.createElement("tr");
         headerRow.setAttribute("role", "row");

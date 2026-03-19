@@ -75,14 +75,14 @@ export default class Navigation {
         btnPrevYear.addEventListener("click", () => {
             const d = new Date(this.dp.currentDate);
             d.setFullYear(d.getFullYear() - 1);
-            this.dp.renderCalendar("month-slide-right", d);
+            this.dp.renderCalendar("month-slide-left", d);
             this.dp.positioning.positionPicker();
         });
 
         btnNextYear.addEventListener("click", () => {
             const d = new Date(this.dp.currentDate);
             d.setFullYear(d.getFullYear() + 1);
-            this.dp.renderCalendar("month-slide-left", d);
+            this.dp.renderCalendar("month-slide-right", d);
             this.dp.positioning.positionPicker();
         });
     }
@@ -91,14 +91,14 @@ export default class Navigation {
         btnPrevMonth.addEventListener("click", () => {
             const d = new Date(this.dp.currentDate);
             d.setMonth(d.getMonth() - 1);
-            this.dp.renderCalendar("month-slide-right", d);
+            this.dp.renderCalendar("month-slide-left", d);
             this.dp.positioning.positionPicker();
         });
 
         btnNextMonth.addEventListener("click", () => {
             const d = new Date(this.dp.currentDate);
             d.setMonth(d.getMonth() + 1);
-            this.dp.renderCalendar("month-slide-left", d);
+            this.dp.renderCalendar("month-slide-right", d);
             this.dp.positioning.positionPicker();
         });
     }
