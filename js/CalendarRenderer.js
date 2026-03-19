@@ -52,15 +52,10 @@ export default class CalendarRenderer {
         emptyTh.classList.add("week-number");
         headerRow.append(emptyTh);
 
-        const baseDays = [...Array(7).keys()].map(i =>
-            new Intl.DateTimeFormat(this.dp.options.locale, { weekday: "short" })
-                .format(new Date(1970, 0, 4 + i)) 
+        const rotatedDays = DateUtils.getRotatedWeekdayNames(
+            this.dp.options.locale,
+            this.dp.options.firstDayOfWeek
         );
-
-        const rotatedDays = [
-            ...baseDays.slice(this.dp.options.firstDayOfWeek),
-            ...baseDays.slice(0, this.dp.options.firstDayOfWeek)
-        ];
 
         rotatedDays.forEach(d => {
             const th = document.createElement("th");
@@ -90,15 +85,11 @@ export default class CalendarRenderer {
         return tr;
     }
 
-    createDayCell(year, month, dayNumber, daysInMonth, prevMonthDays) {
+    createDayCell(year, month, dayNumber, daysInMonth, prevMonthDays, renderState) {
         const td = document.createElement("td");
         td.setAttribute("role", "gridcell");
         td.setAttribute("tabindex", "-1");
         let cellDate;
-
-        td.addEventListener("keydown", (e) => {
-            this.dp.handleDayKeydown(e, cellDate);
-        });
 
         if (dayNumber <= 0) {
             const realDay = prevMonthDays + dayNumber;
@@ -119,24 +110,20 @@ export default class CalendarRenderer {
         }
 
         const iso = DateUtils.toLocalISO(cellDate);
-        const todayIso = DateUtils.toLocalISO(new Date());
 
         td.dataset.iso = iso;
 
-        if (iso === todayIso) {
+        if (iso === renderState.todayIso) {
             td.classList.add("today");
             td.setAttribute("tabindex", "0");
         }
-        
-        const min = this.dp.options.minDate ? new Date(this.dp.options.minDate) : null;
-        const max = this.dp.options.maxDate ? new Date(this.dp.options.maxDate) : null;
 
         let isDisabled = false;
 
-        if (min && cellDate < min) isDisabled = true;
-        if (max && cellDate > max) isDisabled = true;
+        if (renderState.minDate && cellDate < renderState.minDate) isDisabled = true;
+        if (renderState.maxDate && cellDate > renderState.maxDate) isDisabled = true;
 
-        if (this.dp.options.disabledDates?.includes(iso)) {
+        if (this.dp.disabledDateSet.has(iso)) {
             isDisabled = true;
         }
 
@@ -149,22 +136,15 @@ export default class CalendarRenderer {
             td.setAttribute("tabindex", "-1");
           }
 
-        if (this.dp.options.highlightedDates?.includes(iso)) {
+        if (this.dp.highlightedDateSet.has(iso)) {
             td.classList.add("highlighted");
         }
 
-        if (this.dp.selectedDate) {
-            const selectedIso = DateUtils.toLocalISO(this.dp.selectedDate);
-            if (iso === selectedIso) {
-                td.classList.add("selected");
-                td.setAttribute("aria-selected", "true");
-                td.setAttribute("tabindex", "0");
-            }
+        if (!isDisabled && iso === renderState.selectedIso) {
+            td.classList.add("selected");
+            td.setAttribute("aria-selected", "true");
+            td.setAttribute("tabindex", "0");
         }
-
-        td.addEventListener("click", () => {
-            this.dp.selectDate(cellDate);
-        });
 
         return td;
     }
@@ -174,6 +154,12 @@ export default class CalendarRenderer {
     fillCalendarDays(tbody) {
         const year = this.dp.currentDate.getFullYear();
         const month = this.dp.currentDate.getMonth();
+        const renderState = {
+            minDate: this.dp.options.minDate,
+            maxDate: this.dp.options.maxDate,
+            selectedIso: this.dp.selectedDate ? DateUtils.toLocalISO(this.dp.selectedDate) : null,
+            todayIso: DateUtils.toLocalISO(new Date())
+        };
 
         const { daysInMonth, firstDayIndex, prevMonthDays } =
             DateUtils.getMonthMetrics(
@@ -199,13 +185,13 @@ export default class CalendarRenderer {
                     month,
                     dayNumber,
                     daysInMonth,
-                    prevMonthDays
+                    prevMonthDays,
+                    renderState
                 );
 
                 if (weekendCols.has(col)) {
                     td.classList.add("weekend");
                 }
-
 
                 tr.append(td);
             }

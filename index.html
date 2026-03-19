@@ -11,131 +11,108 @@
     <link rel="stylesheet" href="css/calendar.css">
     <link rel="stylesheet" href="css/navigation.css">
     <link rel="stylesheet" href="css/animations.css">
-    <style>
-        :root {
-            --page-bg: linear-gradient(180deg, #f5f8ff 0%, #eef3fb 100%);
-            --card-bg: #ffffff;
-            --card-border: #d9e4f3;
-            --text-main: #1d2a39;
-            --text-muted: #5f7085;
-            --accent: #1e5fb5;
-            --accent-soft: #e8f1ff;
-        }
-
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-main);
-            background: var(--page-bg);
-            min-height: 100vh;
-        }
-
-        .demo-wrap {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 2rem 1rem 3rem;
-        }
-
-        h1 {
-            margin: 0 0 0.4rem;
-        }
-
-        .lead {
-            margin: 0 0 1.5rem;
-            color: var(--text-muted);
-        }
-
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .demo-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 1rem;
-            box-shadow: 0 10px 24px rgba(11, 42, 86, 0.08);
-        }
-
-        .demo-card h2 {
-            font-size: 1.05rem;
-            margin: 0 0 0.35rem;
-        }
-
-        .demo-card p {
-            margin: 0 0 0.8rem;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .demo-input {
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #bccce2;
-            border-radius: 8px;
-            background: #fff;
-            padding: 0.62rem 0.72rem;
-            font-size: 0.97rem;
-            outline: none;
-            transition: border-color 0.18s ease, box-shadow 0.18s ease;
-        }
-
-        .demo-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        .event-output {
-            margin-top: 0.7rem;
-            font-size: 0.88rem;
-            color: var(--accent);
-            min-height: 1.2rem;
-        }
-    </style>
+    <link rel="stylesheet" href="css/demo.css">
 </head>
 <body>
-    <main class="demo-wrap">
-        <h1>DatePicker Demo Gallery</h1>
-        <p class="lead">Four practical configurations for portfolio showcase and API testing.</p>
+    <main class="demo-page">
+        <section class="demo-hero">
+            <p class="demo-eyebrow">JS Calendar</p>
+            <h1>DatePicker Demo Gallery</h1>
+            <p class="demo-lead">Scroll through four practical configurations, each shown as its own section so the page reads cleanly from top to bottom on desktop and mobile.</p>
+        </section>
 
-        <section class="demo-grid">
-            <article class="demo-card">
-                <h2>1. Basic Usage</h2>
-                <p>Default settings with keyboard and mouse support.</p>
-                <input id="date-input-basic" class="demo-input" type="text" readonly placeholder="Pick a date">
-                <div id="picker-container-basic" class="datepicker">
-                    <div class="calendar-root"></div>
+        <section class="demo-list" aria-label="DatePicker demos">
+            <article class="demo-showcase">
+                <div class="demo-copy">
+                    <p class="demo-kicker">Demo 01</p>
+                    <h2>Basic Usage</h2>
+                    <p class="demo-description">The default setup with keyboard support, mouse interaction, and the standard component behavior. This is the clean reference version for everyday use.</p>
+                    <div class="demo-tags" aria-label="Basic usage features">
+                        <span>Default config</span>
+                        <span>Keyboard ready</span>
+                        <span>Mouse friendly</span>
+                    </div>
+                </div>
+                <div class="demo-surface">
+                    <div class="demo-control">
+                        <label class="demo-label" for="date-input-basic">Pick any date</label>
+                        <input id="date-input-basic" class="demo-input" type="text" readonly placeholder="Pick a date">
+                        <p class="demo-helper">Use this example as the baseline when checking the component’s default behavior.</p>
+                    </div>
+                    <div id="picker-container-basic" class="datepicker">
+                        <div class="calendar-root"></div>
+                    </div>
                 </div>
             </article>
 
-            <article class="demo-card">
-                <h2>2. Min/Max Range</h2>
-                <p>Selection restricted to a fixed date range.</p>
-                <input id="date-input-range" class="demo-input" type="text" readonly placeholder="Pick within 2026">
-                <div id="picker-container-range" class="datepicker">
-                    <div class="calendar-root"></div>
+            <article class="demo-showcase">
+                <div class="demo-copy">
+                    <p class="demo-kicker">Demo 02</p>
+                    <h2>Min and Max Range</h2>
+                    <p class="demo-description">This configuration constrains the picker to a fixed window. It is useful for booking periods, fiscal-year forms, or any workflow with strict date limits.</p>
+                    <div class="demo-tags" aria-label="Range demo features">
+                        <span>2026 only</span>
+                        <span>Guarded input</span>
+                        <span>Validation aid</span>
+                    </div>
+                </div>
+                <div class="demo-surface">
+                    <div class="demo-control">
+                        <label class="demo-label" for="date-input-range">Pick a date in 2026</label>
+                        <input id="date-input-range" class="demo-input" type="text" readonly placeholder="Pick within 2026">
+                        <p class="demo-helper">Dates outside the allowed range stay unavailable to the user.</p>
+                    </div>
+                    <div id="picker-container-range" class="datepicker">
+                        <div class="calendar-root"></div>
+                    </div>
                 </div>
             </article>
 
-            <article class="demo-card">
-                <h2>3. Disabled + Highlighted</h2>
-                <p>Business dates highlighted while blocked dates stay unselectable.</p>
-                <input id="date-input-advanced" class="demo-input" type="text" readonly placeholder="Check highlighted dates">
-                <div id="picker-container-advanced" class="datepicker">
-                    <div class="calendar-root"></div>
+            <article class="demo-showcase">
+                <div class="demo-copy">
+                    <p class="demo-kicker">Demo 03</p>
+                    <h2>Disabled and Highlighted Dates</h2>
+                    <p class="demo-description">Blocked days remain unselectable, while important dates get visual emphasis. This is useful for availability planning, scheduling, and business-event marking.</p>
+                    <div class="demo-tags" aria-label="Advanced demo features">
+                        <span>Blocked dates</span>
+                        <span>Highlighted dates</span>
+                        <span>Week starts Monday</span>
+                    </div>
+                </div>
+                <div class="demo-surface">
+                    <div class="demo-control">
+                        <label class="demo-label" for="date-input-advanced">Inspect special dates</label>
+                        <input id="date-input-advanced" class="demo-input" type="text" readonly placeholder="Check highlighted dates">
+                        <p class="demo-helper">Highlighted days stand out visually, while disabled days cannot be selected.</p>
+                    </div>
+                    <div id="picker-container-advanced" class="datepicker">
+                        <div class="calendar-root"></div>
+                    </div>
                 </div>
             </article>
 
-            <article class="demo-card">
-                <h2>4. onSelect Callback</h2>
-                <p>Selected date is mirrored in a live output line.</p>
-                <input id="date-input-callback" class="demo-input" type="text" readonly placeholder="Pick and watch callback output">
-                <div id="picker-container-callback" class="datepicker">
-                    <div class="calendar-root"></div>
+            <article class="demo-showcase">
+                <div class="demo-copy">
+                    <p class="demo-kicker">Demo 04</p>
+                    <h2>onSelect Callback</h2>
+                    <p class="demo-description">This example wires the picker into live UI feedback. When a date is selected, the page immediately updates a status line below the input.</p>
+                    <div class="demo-tags" aria-label="Callback demo features">
+                        <span>Live callback</span>
+                        <span>UI feedback</span>
+                        <span>Event handling</span>
+                    </div>
                 </div>
-                <p id="callback-output" class="event-output"></p>
+                <div class="demo-surface">
+                    <div class="demo-control">
+                        <label class="demo-label" for="date-input-callback">Select a date and watch the output</label>
+                        <input id="date-input-callback" class="demo-input" type="text" readonly placeholder="Pick and watch callback output">
+                        <p class="demo-helper">The output line updates as soon as the component fires its selection callback.</p>
+                        <p id="callback-output" class="event-output"></p>
+                    </div>
+                    <div id="picker-container-callback" class="datepicker">
+                        <div class="calendar-root"></div>
+                    </div>
+                </div>
             </article>
         </section>
     </main>

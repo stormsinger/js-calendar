@@ -4,6 +4,10 @@ import Positioning from "./Positioning.js";
 import DateUtils from "./DateUtils.js";
 
 export default class DatePicker {
+    static instances = new Set();
+
+    static documentClickHandler = null;
+
     constructor(inputSelector, pickerSelector, options = {}) {
         if (typeof inputSelector !== "string" || !inputSelector.trim()) {
             throw new TypeError("DatePicker: inputSelector must be a non-empty CSS selector string.");
@@ -47,6 +51,7 @@ export default class DatePicker {
 
         this.container.setAttribute("role", "dialog");
         this.container.setAttribute("aria-modal", "true");
+        this.showcase = this.input.closest(".demo-showcase");
 
         this.currentDate = new Date();
         this.selectedDate = null;
@@ -70,10 +75,14 @@ export default class DatePicker {
             highlightedDates: this.normalizeDateList(mergedOptions.highlightedDates)
         };
 
+        this.disabledDateSet = new Set(this.options.disabledDates);
+        this.highlightedDateSet = new Set(this.options.highlightedDates);
+
         this.renderer = new CalendarRenderer(this);
         this.navigation = new Navigation(this);
         this.positioning = new Positioning(this);
         this.calendarElement = this.renderer.calendarElement;
+        this.boundHandlers = {};
 
         this.initialize();
     }
@@ -118,9 +127,33 @@ export default class DatePicker {
     }
 
     initialize() {
+        DatePicker.registerInstance(this);
         this.attachInputEvents();
         this.positioning.enableAutoRepositioning();
         this.container.setAttribute("tabindex", "-1");
+    }
+
+    static registerInstance(instance) {
+        DatePicker.instances.add(instance);
+
+        if (!DatePicker.documentClickHandler) {
+            DatePicker.documentClickHandler = (event) => {
+                DatePicker.instances.forEach((pickerInstance) => {
+                    pickerInstance.handleDocumentClick(event);
+                });
+            };
+
+            document.addEventListener("click", DatePicker.documentClickHandler);
+        }
+    }
+
+    static unregisterInstance(instance) {
+        DatePicker.instances.delete(instance);
+
+        if (!DatePicker.instances.size && DatePicker.documentClickHandler) {
+            document.removeEventListener("click", DatePicker.documentClickHandler);
+            DatePicker.documentClickHandler = null;
+        }
     }
 
     renderCalendar(animation, newDate = null) {
@@ -147,67 +180,167 @@ export default class DatePicker {
         this.calendarElement = this.renderer.calendarElement;
 
         this.container.classList.add("open");
+        if (this.showcase) {
+            this.showcase.classList.add("is-picker-open");
+        }
         this.container.focus();
 
-        if (this.selectedDate) {
-            const iso = DateUtils.toLocalISO(this.selectedDate);
-            const cell = this.calendarElement.querySelector(`[data-iso="${iso}"]`);
-            if (cell) {
-                cell.setAttribute("tabindex", "0");
-                cell.focus();
-            }
-        }
+        this.focusInitialCell();
 
         this.input.setAttribute("aria-expanded", "true");
     }
 
-    attachInputEvents() {
-        this.input.addEventListener("click", () => {
-            this.renderCalendar("grow-from-center");
-            this.calendarElement = this.renderer.calendarElement;
-            this.positioning.positionPicker();
-        });
+    isOpen() {
+        return this.container.classList.contains("open");
+    }
 
-        this.container.addEventListener("keydown", (e) => {
+    open(animation = "grow-from-center") {
+        if (this.isOpen()) {
+            this.positioning.positionPicker();
+            return;
+        }
+
+        this.renderCalendar(animation);
+        this.positioning.positionPicker();
+    }
+
+    attachInputEvents() {
+        this.boundHandlers.inputClick = () => {
+            this.open("grow-from-center");
+        };
+
+        this.boundHandlers.containerKeydownCapture = (e) => {
             if (e.key === "Escape") {
                 this.close();
             }
-        }, true);
+        };
 
-        this.container.addEventListener("keydown", (e) => {
+        this.boundHandlers.containerKeydown = (e) => {
             if (e.key === "Tab") {
                 this.trapFocus(e);
+                return;
             }
-        });
 
-        document.addEventListener("click", (e) => {
-            const clickedInside = this.container.contains(e.target);
-            const clickedInput = e.target === this.input;
-            const isNavButton = e.target.closest(".nav-top, .nav-bottom");
-
-            if (!clickedInside && !clickedInput && !isNavButton) {
-                this.close();
+            const dayCell = e.target.closest("td[data-iso]");
+            if (!dayCell || !this.container.contains(dayCell)) {
+                return;
             }
-        });
 
-        this.input.addEventListener("keydown", (e) => {
+            const cellDate = this.getCellDate(dayCell);
+            if (cellDate) {
+                this.handleDayKeydown(e, cellDate);
+            }
+        };
+
+        this.boundHandlers.containerClick = (e) => {
+            const dayCell = e.target.closest("td[data-iso]");
+            if (!dayCell || !this.container.contains(dayCell) || dayCell.dataset.disabled === "true") {
+                return;
+            }
+
+            const cellDate = this.getCellDate(dayCell);
+            if (cellDate) {
+                this.selectDate(cellDate);
+            }
+        };
+
+        this.boundHandlers.inputKeydown = (e) => {
             if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                this.renderCalendar("grow-from-center");
-                this.positioning.positionPicker();
+                this.open("grow-from-center");
                 return;
             }
 
             if (e.key === "ArrowDown") {
                 e.preventDefault();
-                this.renderCalendar("grow-from-center");
-                this.positioning.positionPicker();
+                this.open("grow-from-center");
                 return;
             }
-        });
+        };
+
+        this.input.addEventListener("click", this.boundHandlers.inputClick);
+        this.input.addEventListener("keydown", this.boundHandlers.inputKeydown);
+        this.container.addEventListener("keydown", this.boundHandlers.containerKeydownCapture, true);
+        this.container.addEventListener("keydown", this.boundHandlers.containerKeydown);
+        this.container.addEventListener("click", this.boundHandlers.containerClick);
+    }
+
+    handleDocumentClick(e) {
+        const clickedInside = this.container.contains(e.target);
+        const clickedInput = e.target === this.input;
+        const isNavButton = e.target.closest(".nav-top, .nav-bottom");
+
+        if (!clickedInside && !clickedInput && !isNavButton) {
+            this.close({ restoreFocus: false });
+        }
+    }
+
+    getCellDate(cell) {
+        const iso = cell?.dataset?.iso;
+        if (!iso) return null;
+
+        const [year, month, day] = iso.split("-").map(Number);
+        if (!year || !month || !day) return null;
+        return new Date(year, month - 1, day);
+    }
+
+    isDateSelectable(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+            return false;
+        }
+
+        const normalized = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        if (this.options.minDate && normalized < this.options.minDate) {
+            return false;
+        }
+
+        if (this.options.maxDate && normalized > this.options.maxDate) {
+            return false;
+        }
+
+        const iso = DateUtils.toLocalISO(normalized);
+        return !this.disabledDateSet.has(iso);
+    }
+
+    setFocusedCell(cell) {
+        if (!this.calendarElement || !cell) return;
+
+        this.calendarElement.querySelectorAll("[tabindex='0']")
+            .forEach((el) => el.setAttribute("tabindex", "-1"));
+
+        cell.setAttribute("tabindex", "0");
+        cell.focus();
+    }
+
+    getInitialFocusableCell() {
+        if (!this.calendarElement) return null;
+
+        if (this.selectedDate && this.isDateSelectable(this.selectedDate)) {
+            const selectedIso = DateUtils.toLocalISO(this.selectedDate);
+            const selectedCell = this.calendarElement.querySelector(`[data-iso="${selectedIso}"]:not(.disabled)`);
+            if (selectedCell) return selectedCell;
+        }
+
+        const todayCell = this.calendarElement.querySelector("td.today:not(.disabled)");
+        if (todayCell) return todayCell;
+
+        const currentMonthCell = this.calendarElement.querySelector("td.current-month:not(.disabled)");
+        if (currentMonthCell) return currentMonthCell;
+
+        return this.calendarElement.querySelector("td[data-iso]:not(.disabled)");
+    }
+
+    focusInitialCell() {
+        const fallbackCell = this.getInitialFocusableCell();
+        if (fallbackCell) {
+            this.setFocusedCell(fallbackCell);
+        }
     }
 
     trapFocus(e) {
+        if (!this.calendarElement) return;
+
         const focusable = this.calendarElement.querySelectorAll('[tabindex="0"], button');
         if (!focusable.length) return;
 
@@ -227,6 +360,22 @@ export default class DatePicker {
         let newDate;
         const jsDay = cellDate.getDay();
         const weekDay = (jsDay === 0 ? 7 : jsDay);
+        const handledKeys = new Set([
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown",
+            "PageUp",
+            "PageDown",
+            "Home",
+            "End",
+            "Enter",
+            "Escape"
+        ]);
+
+        if (handledKeys.has(e.key)) {
+            e.preventDefault();
+        }
 
         switch (e.key) {
             case "ArrowLeft":
@@ -265,7 +414,9 @@ export default class DatePicker {
                 break;
 
             case "Enter":
-                this.selectDate(cellDate);
+                if (this.isDateSelectable(cellDate)) {
+                    this.selectDate(cellDate);
+                }
                 return;
             case "Escape":
                 this.close();
@@ -279,38 +430,49 @@ export default class DatePicker {
         }
     }
 
-    close() {
+    close({ restoreFocus = true } = {}) {
+        if (!this.isOpen()) {
+            this.input.setAttribute("aria-expanded", "false");
+            return;
+        }
+
         this.container.classList.remove("open");
+        if (this.showcase) {
+            this.showcase.classList.remove("is-picker-open");
+        }
 
         if (this.calendarElement) {
             const focused = this.calendarElement.querySelector("[tabindex='0']");
             if (focused) focused.setAttribute("tabindex", "-1");
         }
 
-        this.input.focus();
+        if (restoreFocus) {
+            this.input.focus();
+        }
+
         this.input.setAttribute("aria-expanded", "false");
     }
 
     focusDate(date) {
         this.currentDate = new Date(date);
-        this.renderCalendar(); 
-
-        // PO renderCalendar() atsinaujina renderer.calendarElement
-        this.calendarElement = this.renderer.calendarElement;
+        this.renderCalendar();
 
         const iso = DateUtils.toLocalISO(date);
-        const cell = this.calendarElement.querySelector(`[data-iso="${iso}"]`);
+        const cell = this.calendarElement.querySelector(`[data-iso="${iso}"]:not(.disabled)`);
 
         if (cell) {
-            this.calendarElement.querySelectorAll("[tabindex='0']")
-                .forEach(el => el.setAttribute("tabindex", "-1"));
-
-            cell.setAttribute("tabindex", "0");
-            cell.focus();
+            this.setFocusedCell(cell);
+            return;
         }
+
+        this.focusInitialCell();
     }
 
     selectDate(date) {
+        if (!this.isDateSelectable(date)) {
+            return;
+        }
+
         this.selectedDate = new Date(date);
         this.currentDate = new Date(date);
         this.input.value = DateUtils.format(date);
@@ -323,6 +485,13 @@ export default class DatePicker {
     }
 
     destroy() {
+        this.close({ restoreFocus: false });
+        this.input.removeEventListener("click", this.boundHandlers.inputClick);
+        this.input.removeEventListener("keydown", this.boundHandlers.inputKeydown);
+        this.container.removeEventListener("keydown", this.boundHandlers.containerKeydownCapture, true);
+        this.container.removeEventListener("keydown", this.boundHandlers.containerKeydown);
+        this.container.removeEventListener("click", this.boundHandlers.containerClick);
+        DatePicker.unregisterInstance(this);
         this.positioning.destroy();
     }
 }

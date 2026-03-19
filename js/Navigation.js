@@ -1,3 +1,5 @@
+import DateUtils from "./DateUtils.js";
+
 export default class Navigation {
     constructor(dp) {
         this.dp = dp;
@@ -15,10 +17,9 @@ export default class Navigation {
 
         const labelYear = document.createElement("a");
         labelYear.setAttribute("tabindex", "-1");
-        const formattedYear = new Intl.DateTimeFormat(
-            this.dp.options.locale,
-            { year: "numeric" }
-        ).format(date);
+        const formattedYear = DateUtils.formatWithOptions(date, this.dp.options.locale, {
+            year: "numeric"
+        });
 
         labelYear.textContent = `${formattedYear}`;
 
@@ -44,10 +45,9 @@ export default class Navigation {
 
         const labelMonth = document.createElement("a");
         labelMonth.setAttribute("tabindex", "-1");
-        const formattedMonth = new Intl.DateTimeFormat(
-            this.dp.options.locale,
-            { month: "long" }
-        ).format(date);
+        const formattedMonth = DateUtils.formatWithOptions(date, this.dp.options.locale, {
+            month: "long"
+        });
 
         labelMonth.textContent = `${formattedMonth}`;
 
@@ -58,10 +58,11 @@ export default class Navigation {
         const btnToday = document.createElement("button");
         btnToday.setAttribute("tabindex", "-1");
         const today = new Date();
-        const formattedToday = new Intl.DateTimeFormat(
-            this.dp.options.locale,
-            { day: "numeric", month: "long", year: "numeric" }
-        ).format(today);
+        const formattedToday = DateUtils.formatWithOptions(today, this.dp.options.locale, {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        });
         btnToday.textContent = `${formattedToday}`;
 
         navBottom.append(btnPrevMonth, labelMonth, btnNextMonth, btnToday);

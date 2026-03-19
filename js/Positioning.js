@@ -1,8 +1,14 @@
 export default class Positioning {
+    static instances = new Set();
+
+    static rafPending = false;
+
+    static scrollHandler = null;
+
+    static resizeHandler = null;
+
     constructor(dp) {
         this.dp = dp;
-        this._scrollHandler = null;
-        this._resizeHandler = null;
     }
 
     positionPicker() {
@@ -31,6 +37,7 @@ export default class Positioning {
         const viewportHeight = window.innerHeight;
         const scrollX = window.scrollX;
         const scrollY = window.scrollY;
+        const offsetParent = picker.offsetParent;
 
         const spaceBelow = viewportHeight - inputRect.bottom;
         const spaceAbove = inputRect.top;
@@ -58,43 +65,65 @@ export default class Positioning {
             left = Math.max(scrollX, viewportWidth + scrollX - pickerWidth);
         }
 
+        if (offsetParent && offsetParent !== document.body && offsetParent !== document.documentElement) {
+            const parentRect = offsetParent.getBoundingClientRect();
+            const parentTop = parentRect.top + scrollY - offsetParent.clientTop;
+            const parentLeft = parentRect.left + scrollX - offsetParent.clientLeft;
+
+            top -= parentTop;
+            left -= parentLeft;
+        }
+
         picker.style.top  = `${top}px`;
         picker.style.left = `${left}px`;
     }
 
     enableAutoRepositioning() {
-        let rafPending = false;
+        Positioning.instances.add(this);
 
-        this._scrollHandler = () => {
-            if (!this.dp.container.classList.contains("open")) return;
-            if (rafPending) return;
-            rafPending = true;
-            requestAnimationFrame(() => {
-                rafPending = false;
-                if (this.dp.container.classList.contains("open")) {
-                    this.positionPicker();
-                }
-            });
-        };
+        if (!Positioning.scrollHandler) {
+            Positioning.scrollHandler = () => {
+                if (Positioning.rafPending) return;
 
-        this._resizeHandler = () => {
-            if (this.dp.container.classList.contains("open")) {
-                this.positionPicker();
-            }
-        };
+                Positioning.rafPending = true;
+                requestAnimationFrame(() => {
+                    Positioning.rafPending = false;
 
-        window.addEventListener("scroll", this._scrollHandler, true);
-        window.addEventListener("resize", this._resizeHandler);
+                    Positioning.instances.forEach((instance) => {
+                        if (instance.dp.isOpen()) {
+                            instance.positionPicker();
+                        }
+                    });
+                });
+            };
+
+            window.addEventListener("scroll", Positioning.scrollHandler, true);
+        }
+
+        if (!Positioning.resizeHandler) {
+            Positioning.resizeHandler = () => {
+                Positioning.instances.forEach((instance) => {
+                    if (instance.dp.isOpen()) {
+                        instance.positionPicker();
+                    }
+                });
+            };
+
+            window.addEventListener("resize", Positioning.resizeHandler);
+        }
     }
 
     destroy() {
-        if (this._scrollHandler) {
-            window.removeEventListener("scroll", this._scrollHandler, true);
-            this._scrollHandler = null;
+        Positioning.instances.delete(this);
+
+        if (!Positioning.instances.size && Positioning.scrollHandler) {
+            window.removeEventListener("scroll", Positioning.scrollHandler, true);
+            Positioning.scrollHandler = null;
         }
-        if (this._resizeHandler) {
-            window.removeEventListener("resize", this._resizeHandler);
-            this._resizeHandler = null;
+
+        if (!Positioning.instances.size && Positioning.resizeHandler) {
+            window.removeEventListener("resize", Positioning.resizeHandler);
+            Positioning.resizeHandler = null;
         }
     }
 }

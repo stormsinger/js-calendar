@@ -1,21 +1,51 @@
 export default class DateUtils {
+    static formatterCache = new Map();
+
+    static weekdayCache = new Map();
+
+    static getFormatter(locale, options) {
+        const cacheKey = `${locale}:${JSON.stringify(options)}`;
+
+        if (!this.formatterCache.has(cacheKey)) {
+            this.formatterCache.set(cacheKey, new Intl.DateTimeFormat(locale, options));
+        }
+
+        return this.formatterCache.get(cacheKey);
+    }
+
+    static formatWithOptions(date, locale, options) {
+        return this.getFormatter(locale, options).format(date);
+    }
+
+    static getWeekdayNames(locale) {
+        if (!this.weekdayCache.has(locale)) {
+            const names = [...Array(7).keys()].map((index) =>
+                this.formatWithOptions(new Date(1970, 0, 4 + index), locale, { weekday: "short" })
+            );
+
+            this.weekdayCache.set(locale, names);
+        }
+
+        return this.weekdayCache.get(locale);
+    }
+
+    static getRotatedWeekdayNames(locale, firstDayOfWeek) {
+        const baseDays = this.getWeekdayNames(locale);
+
+        return [
+            ...baseDays.slice(firstDayOfWeek),
+            ...baseDays.slice(0, firstDayOfWeek)
+        ];
+    }
+
     static getMonthMetrics(year, month, locale, firstDayOfWeek) {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const prevMonthDays = new Date(year, month, 0).getDate();
 
-        const baseDays = [...Array(7).keys()].map(i =>
-            new Intl.DateTimeFormat(locale, { weekday: "short" })
-                .format(new Date(1970, 0, 4 + i))
-        );
-
-        const rotatedDays = [
-            ...baseDays.slice(firstDayOfWeek),
-            ...baseDays.slice(0, firstDayOfWeek)
-        ];
+        const rotatedDays = this.getRotatedWeekdayNames(locale, firstDayOfWeek);
 
         const firstDate = new Date(year, month, 1);
-        const firstDayName = new Intl.DateTimeFormat(locale, { weekday: "short" })
-            .format(firstDate);
+        const firstDayName = this.formatWithOptions(firstDate, locale, { weekday: "short" });
 
         const firstDayIndex = rotatedDays.indexOf(firstDayName);
 
@@ -58,9 +88,8 @@ export default class DateUtils {
         const month = d.getMonth();
         d.setFullYear(d.getFullYear() + years);
 
-        // jei mėnuo pasikeitė – reiškia rollover įvyko
         if (d.getMonth() !== month) {
-            d.setDate(0); // nustato į paskutinę praėjusio mėnesio dieną
+            d.setDate(0);
         }
 
         return d;
